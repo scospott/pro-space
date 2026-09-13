@@ -1,3 +1,4 @@
+import { MODE_FIXTURE, PIECES_MAISON_DEMO } from "./demo/mode";
 import { empreintePhotos } from "./hash";
 import { nouvelId } from "./id";
 import type { Piece, TypeLogement } from "./types";
@@ -12,7 +13,13 @@ export const PIECES_PAR_DEFAUT: Record<TypeLogement, string[]> = {
   cave_garage: ["Cave", "Garage"],
 };
 
+/** Noms des pièces proposées pour un type de logement ; en mode démo scripté, la maison suit la fixture Fribourg. */
+export function nomsPiecesParDefaut(type: TypeLogement, demo: boolean = MODE_FIXTURE): string[] {
+  if (demo && type === "maison") return [...PIECES_MAISON_DEMO];
+  return [...PIECES_PAR_DEFAUT[type]];
+}
+
 export function piecesParDefaut(type: TypeLogement): Piece[] {
   const vide = empreintePhotos([]);
-  return PIECES_PAR_DEFAUT[type].map((nom) => ({ id: nouvelId("pc"), nom, hashPhotos: vide }));
+  return nomsPiecesParDefaut(type).map((nom) => ({ id: nouvelId("pc"), nom, hashPhotos: vide }));
 }

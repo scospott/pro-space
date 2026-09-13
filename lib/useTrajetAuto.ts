@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { DELAI_TRAJET_MS, trajetFixture } from "./demo/fixture";
+import { MODE_FIXTURE } from "./demo/mode";
 import { useStore } from "./store";
 
 export type EtatTrajet = { etat: "repos" | "calcul" | "ok" | "echec"; message?: string };
@@ -46,6 +48,15 @@ export function useTrajetAuto(actif: boolean): EtatTrajet & { relancer: () => vo
       setEtat({ etat: "calcul" });
       void (async () => {
         try {
+          // Mode démo scripté : trajet Fribourg rejoué sans appel réseau.
+          const simule = MODE_FIXTURE ? trajetFixture(localite) : null;
+          if (simule) {
+            await new Promise<void>((resolve) => setTimeout(resolve, DELAI_TRAJET_MS));
+            if (controle.signal.aborted) return;
+            setTrajet({ ...simule, adresse });
+            setEtat({ etat: "ok" });
+            return;
+          }
           const reponse = await fetch("/api/trajet", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

@@ -23,6 +23,7 @@ Next.js 16 (App Router, TypeScript strict), Tailwind v4 (`@theme` dans `app/glob
 - Couleurs de marque : `--brand` = `#003664`, bleu marine unique du logo (`public/logo-site.webp`) ; `--accent` = `#E8772E` (le logo n'a qu'une couleur, l'accent de la maquette est conservé).
 - Cibles tactiles ≥ 48 px, champs 46 px, rien qui dépende du survol. Chiffres tabulaires (`montant`) sur les montants.
 - Le moteur de prix et l'extraction lisent la grille du store, jamais `lib/grille.default.ts` directement (seuls le store et les tests l'importent).
+- Mode démo scripté (`NEXT_PUBLIC_DEMO_FIXTURE=true`, `lib/demo/`) : il remplace seulement la source de l'inventaire et du trajet ; aucun texte d'interface ne change, rien n'est pré-rempli, le mode réel reste le défaut.
 - La clé `ANTHROPIC_API_KEY` ne quitte jamais le serveur. Ne jamais lire, afficher ni commiter `.env.local`.
 
 ## Commandes

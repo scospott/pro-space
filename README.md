@@ -24,6 +24,7 @@ Ouvrir http://localhost:3000. Les données (brouillon, devis envoyés, grille) r
 | `ANTHROPIC_MODEL` | `claude-sonnet-5` | Modèle d'inventaire (défaut `claude-sonnet-5`). |
 | `BASE_ADDRESS` | `Payerne, Suisse` | Adresse de départ du camion pour le calcul du trajet. |
 | `NEXT_PUBLIC_DEMO` | `true` | Trois devis d'exemple. Lue au build : redéployer après modification. |
+| `NEXT_PUBLIC_DEMO_FIXTURE` | `false` | `true` = démo scriptée : l'analyse rejoue l'inventaire du dossier Fribourg (`lib/demo/fixture-fribourg.ts`) au lieu d'appeler l'IA, le trajet vers Fribourg est rejoué, une maison propose Salon, Cuisine, Chambre 1, Chambre 2, Bureau, Cave, Garage. Rien n'est pré-rempli et l'interface est identique. Absente ou `false` : mode réel. Lue au build. |
 
 ## Déploiement sur Vercel
 
@@ -33,6 +34,7 @@ Ouvrir http://localhost:3000. Les données (brouillon, devis envoyés, grille) r
    - `ANTHROPIC_MODEL` = `claude-sonnet-5`
    - `BASE_ADDRESS` = `Payerne, Suisse`
    - `NEXT_PUBLIC_DEMO` = `true`
+   - `NEXT_PUBLIC_DEMO_FIXTURE` = `true` seulement pour un déploiement de démonstration scriptée (dossier Fribourg, résultat identique à chaque présentation, aucun appel à l'IA pour les pièces de la fixture) ; à omettre ou à mettre à `false` pour le mode réel. Redéployer après chaque changement, la variable est lue au build.
 3. Déployer. Les fonctions `/api/analyse` (60 s max), `/api/pdf` et `/api/trajet` tournent en Node.js ; les polices et le logo du PDF sont inclus par `outputFileTracingIncludes` (`next.config.ts`).
 4. Vérifier sur l'URL HTTPS : trajet calculé à l'écran 1, génération d'un devis, téléchargement du PDF.
 

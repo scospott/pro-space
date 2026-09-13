@@ -73,4 +73,12 @@ Une ligne par décision : choix, raison.
 - Parcours Playwright joué contre un build de production (`npm run build && next start`, port 3300, `NEXT_PUBLIC_DEMO=true`) : il couvre aussi la route PDF réelle (fichier téléchargé, plus de 20 Ko, en-tête %PDF). Seuls `/api/analyse` et `/api/trajet` sont simulés.
 - Le test importe l'inventaire Rochat depuis `lib/fixtures/rochat.ts` (le même que le test golden) : le total attendu CHF 2'653.40 et le total après modification du canapé (CHF 2'688.55, vérifié aussi en test unitaire) ne sont pas recopiés à la main dans deux endroits différents.
 - Erreur IndexedDB autre que le quota (navigation privée, stockage refusé) : message dédié qui dit quoi faire, plutôt que « photo illisible ».
+- Mode démo scripté : `.env.example` contient `NEXT_PUBLIC_DEMO_FIXTURE=false` (commentaire : `true` active la démo) pour qu'une copie du fichier garde le mode réel par défaut.
+- Mode démo scripté : le rejeu se branche dans `analyserPiece` (service client) et dans le calcul automatique du trajet ; l'overlay, les confiances, les filières et le moteur sont ceux du mode réel, seule la source de l'inventaire change.
+- Pièce hors fixture en mode démo : `GET /api/analyse` (actif seulement quand `NEXT_PUBLIC_DEMO_FIXTURE=true`, 404 sinon) indique si une clé est configurée, sans la révéler ; avec clé, analyse réelle, sans clé, inventaire vide avec la remarque « Aucun objet reconnu, ajoutez-les à la main » après le même délai simulé.
+- Trajet Fribourg scripté : même attente de 800 ms après la dernière frappe qu'en mode réel, puis « Calcul du trajet… » pendant 600 ms, sans réseau.
+- Filière initiale des lignes de la fixture : `filiereEffective` sans choix manuel, donc la règle §6.1 appliquée à la destination saisie ; un changement de destination ensuite les recalcule comme des lignes détectées.
+- Rangs de photos de la fixture conservés tels quels, même si Ethan dépose moins de photos que la fixture n'en cite : ils ne servent ni au calcul ni à l'affichage.
+- Pièces par défaut d'une maison en mode démo (Salon, Cuisine, Chambre 1, Chambre 2, Bureau, Cave, Garage) via `nomsPiecesParDefaut(type, demo)`, testable dans les deux modes ; les autres types et le mode réel suivent la spec.
+- Parcours Playwright forcé en mode réel (`NEXT_PUBLIC_DEMO_FIXTURE=false`) : un `.env.local` en mode démo ne peut pas fausser le total Rochat attendu.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.

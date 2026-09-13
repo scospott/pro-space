@@ -3,6 +3,13 @@ import { buildSystemPrompt, buildTool, lireReponseOutil, OUTIL_INVENTAIRE, type 
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
+/** Mode démo scripté uniquement : indique si une clé est configurée (sans jamais la révéler). */
+export async function GET() {
+  if (process.env.NEXT_PUBLIC_DEMO_FIXTURE !== "true") return Response.json({ error: "Introuvable." }, { status: 404 });
+  return Response.json({ cleConfiguree: Boolean(process.env.ANTHROPIC_API_KEY?.trim()) }, { headers: { "Cache-Control": "no-store" } });
+}
 
 const MAX_PHOTOS = 8;
 const MAX_OCTETS = 4 * 1024 * 1024;

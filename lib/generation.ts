@@ -1,6 +1,8 @@
 "use client";
 
 // Analyse d'une pièce côté client : lecture des blobs, appel de /api/analyse, post-traitement avec la grille du store.
+import { delaiSimule, inventaireFixture, itemsDepuisFixture, REMARQUE_PIECE_INCONNUE } from "./demo/fixture";
+import { MODE_FIXTURE } from "./demo/mode";
 import { getPhoto } from "./photos";
 import { useStore } from "./store";
 import type { InventaireItem } from "./types";
@@ -26,6 +28,21 @@ export async function blobEnBase64(blob: Blob): Promise<string> {
   return btoa(binaire);
 }
 
+function attendre(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Mode démo scripté : une pièce hors fixture n'est analysée pour de vrai que si le serveur a une clé. */
+async function cleServeurConfiguree(): Promise<boolean> {
+  try {
+    const reponse = await fetch("/api/analyse", { method: "GET", cache: "no-store" });
+    const data: unknown = await reponse.json();
+    return reponse.ok && typeof data === "object" && data !== null && "cleConfiguree" in data && data.cleConfiguree === true;
+  } catch {
+    return false;
+  }
+}
+
 function messageErreur(x: unknown): string | undefined {
   return typeof x === "object" && x !== null && "error" in x && typeof x.error === "string" ? x.error : undefined;
 }
@@ -36,6 +53,20 @@ export async function analyserPiece(pieceId: string): Promise<{ items: Inventair
   if (!piece) throw new AnalyseError("Pièce introuvable dans le brouillon.");
   const photos = draft.photos.filter((p) => p.pieceId === pieceId);
   if (photos.length === 0) throw new AnalyseError(`Aucune photo dans « ${piece.nom} ».`);
+
+  // Mode démo scripté : inventaire rejoué après un délai simulé, sans appel à /api/analyse.
+  if (MODE_FIXTURE) {
+    const fixture = inventaireFixture(piece.nom, draft.prestation.remarques);
+    if (fixture) {
+      await attendre(delaiSimule(photos.length));
+      const courant = useStore.getState();
+      return { items: itemsDepuisFixture(fixture, pieceId, courant.draft.prestation.destination, courant.grille), remarques: fixture.remarques };
+    }
+    if (!(await cleServeurConfiguree())) {
+      await attendre(delaiSimule(photos.length));
+      return { items: [], remarques: REMARQUE_PIECE_INCONNUE };
+    }
+  }
 
   const donnees = await Promise.all(
     photos.map(async (p) => {

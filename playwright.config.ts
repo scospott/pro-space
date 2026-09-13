@@ -28,6 +28,7 @@ export default defineConfig({
     url: `http://localhost:${PORT}/devis`,
     timeout: 300_000,
     reuseExistingServer: false,
-    env: { NEXT_PUBLIC_DEMO: "true" },
+    // Mode réel forcé : le parcours simule lui-même /api/analyse et /api/trajet.
+    env: { NEXT_PUBLIC_DEMO: "true", NEXT_PUBLIC_DEMO_FIXTURE: "false" },
   },
 });
