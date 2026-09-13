@@ -1,12 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
-import { dateCH, heureCH } from "@/lib/format";
+import { useEffect, type ReactNode } from "react";
 import { CIVILITES, DESTINATIONS, PRESTATIONS, STATIONNEMENTS, TYPES_LOGEMENT, TYPES_NETTOYAGE } from "@/lib/libelles";
-import { deletePhotos } from "@/lib/photos";
 import { flushSaisies } from "@/lib/saisie";
-import { brouillonNonVide, useStore } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/useHydrated";
 import { useTrajetAuto } from "@/lib/useTrajetAuto";
 import { erreursEtape1, NOM_COURT_CHAMP, ORDRE_CHAMPS, type ChampEtape1 } from "@/lib/validation";
@@ -14,7 +12,6 @@ import { BottomBar } from "../BottomBar";
 import { Button } from "../Button";
 import { CalculPanel } from "../CalculPanel";
 import { Chargement } from "../Chargement";
-import { ConfirmDialog } from "../ConfirmDialog";
 import { DevisEnvoyeNotice } from "../DevisEnvoyeNotice";
 import { Field } from "../Field";
 import { Choix, SaisieNombre, SaisieTexte, SaisieZone } from "../inputs";
@@ -36,36 +33,29 @@ const OUI_NON = [
   { value: "non", label: "Non" },
 ] as const;
 
-export function EcranClient({ reprise }: { reprise: boolean }) {
+export function EcranClient({ nouveau }: { nouveau: boolean }) {
   const hydrated = useHydrated();
   const router = useRouter();
   const draft = useStore((s) => s.draft);
   const grille = useStore((s) => s.grille);
-  const enregistreAt = useStore((s) => s.ui.brouillonEnregistreAt);
+  const afficherErreurs = useStore((s) => s.ui.erreursClientVisibles === true);
   const setClient = useStore((s) => s.setClient);
   const setLieu = useStore((s) => s.setLieu);
   const setPrestation = useStore((s) => s.setPrestation);
   const resetDraft = useStore((s) => s.resetDraft);
-  const [afficherErreurs, setAfficherErreurs] = useState(false);
-  const [repriseTraitee, setRepriseTraitee] = useState(false);
   const trajet = useTrajetAuto(hydrated);
 
-  const nonVide = brouillonNonVide(draft);
   const envoye = draft.statut === "envoye";
 
-  // « Nouveau devis » depuis le rail : un devis envoyé laisse place à un brouillon neuf ; un brouillon vide ne demande rien.
+  // « Nouveau devis » (?nouveau=1) : un devis envoyé laisse place à un brouillon neuf ; un brouillon en cours reprend tel quel.
   useEffect(() => {
-    if (!hydrated || !reprise) return;
-    if (envoye) {
-      resetDraft();
-      router.replace("/nouveau/client");
-    } else if (!nonVide) {
-      router.replace("/nouveau/client");
-    }
-  }, [hydrated, reprise, envoye, nonVide, resetDraft, router]);
+    if (!hydrated || !nouveau) return;
+    if (envoye) resetDraft();
+    router.replace("/nouveau/client");
+  }, [hydrated, nouveau, envoye, resetDraft, router]);
 
   if (!hydrated) return <Chargement />;
-  if (envoye && !reprise) return <DevisEnvoyeNotice />;
+  if (envoye && !nouveau) return <DevisEnvoyeNotice />;
 
   const { client, lieu, prestation } = draft;
   const societe = client.civilite === "societe";
@@ -74,44 +64,17 @@ export function EcranClient({ reprise }: { reprise: boolean }) {
   const err = (k: ChampEtape1) => (afficherErreurs ? erreurs[k] : undefined);
   const id = (k: string) => `champ-${k}`;
 
+  // Navigation libre vers les photos : le dossier n'est validé qu'au clic sur « Générer le devis ».
   const continuer = () => {
     flushSaisies();
-    const e = erreursEtape1(useStore.getState().draft);
-    const premier = ORDRE_CHAMPS.find((k) => e[k]);
-    if (premier) {
-      setAfficherErreurs(true);
-      document.getElementById(id(premier))?.focus();
-      return;
-    }
     router.push("/nouveau/photos");
   };
-
-  const reprendre = () => {
-    setRepriseTraitee(true);
-    router.replace("/nouveau/client");
-  };
-
-  const repartirDeZero = () => {
-    const cles = useStore.getState().draft.photos.map((p) => p.blobKey);
-    void deletePhotos(cles).catch(() => undefined);
-    resetDraft();
-    setAfficherErreurs(false);
-    setRepriseTraitee(true);
-    router.replace("/nouveau/client");
-  };
-
-  const nomBrouillon = [client.prenom, client.nom].filter(Boolean).join(" ") || "un client sans nom";
 
   let messageBas: ReactNode = "Les champs marqués * sont obligatoires. Le brouillon s'enregistre à chaque saisie.";
   if (champsEnErreur.length === 0) {
     messageBas = "Tous les champs obligatoires sont remplis";
   } else if (afficherErreurs) {
-    const n = champsEnErreur.length;
-    messageBas = (
-      <span className="text-danger">
-        {n > 1 ? `${n} champs à compléter` : "1 champ à compléter"} : {champsEnErreur.map((k) => NOM_COURT_CHAMP[k]).join(", ")}
-      </span>
-    );
+    messageBas = <span className="text-danger">Il manque des informations client : {champsEnErreur.map((k) => NOM_COURT_CHAMP[k]).join(", ")}</span>;
   }
 
   return (
@@ -223,23 +186,6 @@ export function EcranClient({ reprise }: { reprise: boolean }) {
           Continuer vers les photos
         </Button>
       </BottomBar>
-
-      <ConfirmDialog
-        open={reprise && !repriseTraitee && nonVide}
-        title="Reprendre le brouillon ?"
-        confirmLabel="Reprendre le brouillon"
-        cancelLabel="Repartir de zéro"
-        onConfirm={reprendre}
-        onCancel={repartirDeZero}
-        onDismiss={reprendre}
-      >
-        <p>
-          Un devis pour {nomBrouillon}
-          {lieu.localite ? ` à ${lieu.localite}` : ""} est en cours
-          {enregistreAt ? `, enregistré le ${dateCH(enregistreAt)} à ${heureCH(enregistreAt)}` : ""}.
-        </p>
-        <p className="mt-2">Repartir de zéro efface ce brouillon, ses photos et son inventaire.</p>
-      </ConfirmDialog>
     </>
   );
 }

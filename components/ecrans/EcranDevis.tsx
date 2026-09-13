@@ -126,7 +126,7 @@ export function EcranDevis() {
             </div>
             <p className="m-0 text-[12.5px] text-muted">Pour changer une quantité ou un prix, dupliquez le devis : la copie reprend tout, avec la grille actuelle.</p>
             <div className="mt-auto flex flex-col gap-2">
-              <ButtonLink href="/nouveau/client?reprise=1" variant="brand">
+              <ButtonLink href="/nouveau/client?nouveau=1" variant="brand">
                 Nouveau devis
               </ButtonLink>
               <ButtonLink href="/devis">Voir dans Mes devis</ButtonLink>

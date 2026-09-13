@@ -1,11 +1,12 @@
 // Store de la démo (docs/SPEC.md §10) : zustand + persist (localStorage, clé pro-space-devis).
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { MODE_FIXTURE } from "./demo/mode";
 import { defaultGrille } from "./grille.default";
 import { empreintePhotos } from "./hash";
 import { nouvelId } from "./id";
 import { numeroSuivant } from "./numbering";
-import { MAX_PHOTOS_LOGEMENT, MAX_PHOTOS_PIECE, piecesParDefaut } from "./pieces";
+import { MAX_PHOTOS_LOGEMENT, MAX_PHOTOS_PIECE, piecesApresChangementType, piecesParDefaut } from "./pieces";
 import { calculerDevis, filiereParRegle } from "./pricing";
 import type {
   Client,
@@ -20,6 +21,7 @@ import type {
   Prestation,
   Remise,
   Trajet,
+  TypeLogement,
 } from "./types";
 
 export const COMPTEUR_INITIAL = 413;
@@ -28,6 +30,8 @@ export const CLE_STOCKAGE = "pro-space-devis";
 export interface UiState {
   pieceActiveId?: string;
   brouillonEnregistreAt?: string;
+  /** Champs de l'étape 1 signalés en erreur après un clic sur « Générer le devis » refusé. */
+  erreursClientVisibles?: boolean;
   exemplesCharges: boolean;
 }
 
@@ -61,6 +65,7 @@ export interface ActionsStore {
   /** Retire la pièce, ses photos et son inventaire ; renvoie les clés IndexedDB à supprimer. */
   removePiece: (pieceId: string) => string[];
   setPieceActive: (pieceId: string) => void;
+  setErreursClientVisibles: (visibles: boolean) => void;
   addPhoto: (photo: Photo) => ResultatAjoutPhoto;
   removePhoto: (photoId: string) => Photo | undefined;
   /** Remplace l'inventaire d'une pièce après analyse réussie. */
@@ -85,6 +90,8 @@ export interface ActionsStore {
 export type StoreState = DonneesStore & ActionsStore;
 
 export function nouveauBrouillon(): Devis {
+  // Mode démo scripté : une maison, pour que les sept pièces de la fixture existent dès l'étape 2.
+  const type: TypeLogement = MODE_FIXTURE ? "maison" : "appartement";
   return {
     id: nouvelId("dv"),
     numero: "",
@@ -95,7 +102,7 @@ export function nouveauBrouillon(): Devis {
       rue: "",
       npa: "",
       localite: "",
-      type: "appartement",
+      type,
       pieces: "",
       surfaceM2: undefined,
       etage: 0,
@@ -105,7 +112,7 @@ export function nouveauBrouillon(): Devis {
     },
     prestation: { type: "debarras", destination: "tri", dateSouhaitee: "", remarques: "" },
     trajet: { kmAller: 0, minAller: 0, source: "manuel", libelle: "" },
-    pieces: piecesParDefaut("appartement"),
+    pieces: piecesParDefaut(type),
     photos: [],
     inventaire: [],
     nettoyageInclus: false,
@@ -155,9 +162,10 @@ export const useStore = create<StoreState>()(
           majDraft((d) => {
             const lieu = { ...d.lieu, ...patch };
             let pieces = d.pieces;
-            // Changement de type de logement : pièces par défaut tant qu'aucune photo ni inventaire n'existe.
-            if (patch.type && patch.type !== d.lieu.type && d.photos.length === 0 && d.inventaire.length === 0) {
-              pieces = piecesParDefaut(patch.type);
+            // Changement de type de logement : une pièce qui a des photos ou un inventaire n'est jamais retirée.
+            if (patch.type && patch.type !== d.lieu.type) {
+              const occupees = new Set([...d.photos.map((p) => p.pieceId), ...d.inventaire.map((it) => it.pieceId)]);
+              pieces = piecesApresChangementType(d.pieces, d.lieu.type, patch.type, occupees);
             }
             return { ...d, lieu, pieces };
           }),
@@ -218,6 +226,8 @@ export const useStore = create<StoreState>()(
         },
 
         setPieceActive: (pieceId) => set((s) => ({ ui: { ...s.ui, pieceActiveId: pieceId } })),
+
+        setErreursClientVisibles: (visibles) => set((s) => ({ ui: { ...s.ui, erreursClientVisibles: visibles } })),
 
         addPhoto: (photo) => {
           const d = get().draft;
@@ -342,7 +352,11 @@ export const useStore = create<StoreState>()(
           return { devis: envoye, blobKeys: draft.photos.map((p) => p.blobKey) };
         },
 
-        resetDraft: () => set((s) => ({ draft: nouveauBrouillon(), ui: { ...s.ui, pieceActiveId: undefined, brouillonEnregistreAt: undefined } })),
+        resetDraft: () =>
+          set((s) => ({
+            draft: nouveauBrouillon(),
+            ui: { ...s.ui, pieceActiveId: undefined, brouillonEnregistreAt: undefined, erreursClientVisibles: undefined },
+          })),
 
         dupliquerDevis: (devisId) => {
           const { devis, draft } = get();

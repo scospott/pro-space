@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { dateCH, heureCH } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/useHydrated";
-import { etape1Valide, etape3Accessible } from "@/lib/validation";
+import { etape3Accessible } from "@/lib/validation";
 import { Stepper, type StepState } from "./Stepper";
 
 function titreDepuisChemin(pathname: string): string {
@@ -32,7 +32,8 @@ export function Topbar() {
 
   const steps: StepState[] = [
     { numero: 1, label: "Client et lieu", href: "/nouveau/client", enabled: hydrated },
-    { numero: 2, label: "Photos", href: "/nouveau/photos", enabled: hydrated && (courante > 2 || envoye || etape1Valide(draft)) },
+    // Navigation libre entre les étapes 1 et 2 : le dossier n'est validé qu'au clic sur « Générer le devis ».
+    { numero: 2, label: "Photos", href: "/nouveau/photos", enabled: hydrated },
     { numero: 3, label: "Devis", href: "/nouveau/devis", enabled: hydrated && etape3Accessible(draft) },
   ];
 

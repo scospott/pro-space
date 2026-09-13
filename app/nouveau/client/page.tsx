@@ -2,5 +2,5 @@ import { EcranClient } from "@/components/ecrans/EcranClient";
 
 export default async function ClientPage({ searchParams }: PageProps<"/nouveau/client">) {
   const params = await searchParams;
-  return <EcranClient reprise={params.reprise === "1"} />;
+  return <EcranClient nouveau={params.nouveau === "1"} />;
 }

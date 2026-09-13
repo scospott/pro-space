@@ -60,6 +60,7 @@ export function EcranPhotos({ onGenerer, overlay }: EcranPhotosProps) {
   const removePiece = useStore((s) => s.removePiece);
   const addPhoto = useStore((s) => s.addPhoto);
   const removePhoto = useStore((s) => s.removePhoto);
+  const setErreursClientVisibles = useStore((s) => s.setErreursClientVisibles);
   const toast = useToast((s) => s.show);
   const [dialogue, setDialogue] = useState<Dialogue>(null);
   const [alerte, setAlerte] = useState<Alerte>(null);
@@ -173,9 +174,11 @@ export function EcranPhotos({ onGenerer, overlay }: EcranPhotosProps) {
     setDialogue(null);
   };
 
+  // Seul point de validation du dossier : en cas d'échec, retour à l'étape 1 avec les champs en erreur, photos conservées.
   const generer = () => {
-    if (!etape1Valide(useStore.getState().draft)) {
-      toast("Complétez d'abord le client et le lieu");
+    const valide = etape1Valide(useStore.getState().draft);
+    setErreursClientVisibles(!valide);
+    if (!valide) {
       router.push("/nouveau/client");
       return;
     }

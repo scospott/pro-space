@@ -56,7 +56,7 @@ test("dossier Rochat : client, photos, génération, envoi, grille, duplication"
   await simulerServices(page);
 
   // Écran 1 : client et lieu
-  await page.goto("/nouveau/client?reprise=1");
+  await page.goto("/nouveau/client");
   await page.locator("#champ-prenom").fill(ROCHAT_CLIENT.prenom);
   await page.locator("#champ-nom").fill(ROCHAT_CLIENT.nom);
   await page.locator("#champ-email").fill(ROCHAT_CLIENT.email);

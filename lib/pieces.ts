@@ -23,3 +23,17 @@ export function piecesParDefaut(type: TypeLogement): Piece[] {
   const vide = empreintePhotos([]);
   return nomsPiecesParDefaut(type).map((nom) => ({ id: nouvelId("pc"), nom, hashPhotos: vide }));
 }
+
+/**
+ * Pièces après un changement de type de logement : ajoute les pièces par défaut manquantes du nouveau type et retire
+ * seulement les pièces par défaut de l'ancien type, vides et absentes de la nouvelle liste. `occupees` : identifiants
+ * des pièces qui ont des photos ou un inventaire, jamais retirées.
+ */
+export function piecesApresChangementType(pieces: Piece[], ancien: TypeLogement, nouveau: TypeLogement, occupees: Set<string>): Piece[] {
+  const anciensNoms = nomsPiecesParDefaut(ancien);
+  const nouveauxNoms = nomsPiecesParDefaut(nouveau);
+  const gardees = pieces.filter((p) => occupees.has(p.id) || !anciensNoms.includes(p.nom) || nouveauxNoms.includes(p.nom));
+  const vide = empreintePhotos([]);
+  const ajoutees = nouveauxNoms.filter((nom) => !gardees.some((p) => p.nom === nom)).map((nom) => ({ id: nouvelId("pc"), nom, hashPhotos: vide }));
+  return [...gardees, ...ajoutees];
+}

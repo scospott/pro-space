@@ -71,7 +71,7 @@ export function EcranMesDevis() {
             <p className="max-w-[440px] text-muted">
               Créez votre premier devis : le client et le lieu, quelques photos par pièce, et le prix est calculé par la grille Pro Space.
             </p>
-            <ButtonLink href="/nouveau/client?reprise=1" variant="brand">
+            <ButtonLink href="/nouveau/client?nouveau=1" variant="brand">
               Créer un devis
             </ButtonLink>
           </div>
@@ -181,7 +181,7 @@ export function EcranMesDevis() {
             : `Aucun devis envoyé ce mois-ci (${anneeCH(new Date())})`
         }
       >
-        <ButtonLink href="/nouveau/client?reprise=1" variant="brand">
+        <ButtonLink href="/nouveau/client?nouveau=1" variant="brand">
           Nouveau devis
         </ButtonLink>
       </BottomBar>
