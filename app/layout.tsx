@@ -7,16 +7,22 @@ import { Rail } from "@/components/Rail";
 import { Topbar } from "@/components/Topbar";
 import { Toast } from "@/components/Toast";
 import { StoreHydrator } from "@/components/StoreHydrator";
+import { COULEUR_BRAND, NOM_APPLICATION } from "@/lib/marque";
 
 export const metadata: Metadata = {
-  title: "Pro Space Devis",
+  title: NOM_APPLICATION,
   description: "Devis de débarras et de nettoyage à partir de photos, calculés par la grille Pro Space.",
+  applicationName: NOM_APPLICATION,
+  appleWebApp: { capable: true, title: NOM_APPLICATION, statusBarStyle: "default" },
+  icons: { apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
+  // Next émet seulement « mobile-web-app-capable » : Safari iPadOS lit encore la variante Apple.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#003664",
+  themeColor: COULEUR_BRAND,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

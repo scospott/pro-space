@@ -81,4 +81,5 @@ Une ligne par décision : choix, raison.
 - Rangs de photos de la fixture conservés tels quels, même si Ethan dépose moins de photos que la fixture n'en cite : ils ne servent ni au calcul ni à l'affichage.
 - Pièces par défaut d'une maison en mode démo (Salon, Cuisine, Chambre 1, Chambre 2, Bureau, Cave, Garage) via `nomsPiecesParDefaut(type, demo)`, testable dans les deux modes ; les autres types et le mode réel suivent la spec.
 - Parcours Playwright forcé en mode réel (`NEXT_PUBLIC_DEMO_FIXTURE=false`) : un `.env.local` en mode démo ne peut pas fausser le total Rochat attendu.
+- Manifest : icônes 192, 512 et apple-touch-icon 180 générées par `scripts/icones.mjs` (logo complet à 72 % de la largeur sur fond blanc, marges dans la zone sûre), `purpose: "any"` ; `short_name` « Pro Space » pour tenir sous l'icône. La balise `apple-mobile-web-app-capable` est ajoutée par `metadata.other` car Next 16 n'émet que `mobile-web-app-capable`.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.
