@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { piecesAAnalyser, piecesAOublier } from "@/lib/analyse";
+import { chf, dateCH, heureCH } from "@/lib/format";
 import { nouvelId } from "@/lib/id";
+import { deletePhotos } from "@/lib/photos";
 import { calculerDevis } from "@/lib/pricing";
+import { flushSaisies } from "@/lib/saisie";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/useHydrated";
 import { etape1Valide } from "@/lib/validation";
@@ -12,33 +15,31 @@ import { Button, ButtonLink } from "../Button";
 import { Chargement } from "../Chargement";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { DevisDocument } from "../DevisDocument";
+import { EnvoiDialog } from "../EnvoiDialog";
 import { GenerationOverlay } from "../GenerationOverlay";
 import { InventoryPanel } from "../InventoryPanel";
+import { useToast } from "../Toast";
+import { useActionsDevis } from "../useActionsDevis";
 
 type Relance = { id: string; pieces: string[]; oublier: string[]; nom: string };
 
-export type ActionsDevis = {
-  /** Barre basse et panneau droit quand le devis est envoyé (branchés en phase 6). */
-  barre?: ReactNode;
-  panneauEnvoye?: ReactNode;
-};
-
-export function EcranDevis({ barre, panneauEnvoye }: ActionsDevis) {
+export function EcranDevis() {
   const hydrated = useHydrated();
   const draft = useStore((s) => s.draft);
   const grille = useStore((s) => s.grille);
+  const saveDevisSnapshot = useStore((s) => s.saveDevisSnapshot);
+  const toast = useToast((s) => s.show);
+  const actions = useActionsDevis();
   const [relance, setRelance] = useState<Relance | null>(null);
   const [aConfirmer, setAConfirmer] = useState<Relance | null>(null);
+  const [envoi, setEnvoi] = useState(false);
 
-  const envoye = draft.statut === "envoye" && draft.snapshot !== undefined;
-  const resultat = useMemo(
-    () => (draft.statut === "envoye" && draft.snapshot ? { lignes: draft.snapshot.lignes, totaux: draft.snapshot.totaux } : calculerDevis(draft, grille)),
-    [draft, grille],
-  );
+  const snapshot = draft.statut === "envoye" ? draft.snapshot : undefined;
+  const resultat = useMemo(() => (snapshot ? { lignes: snapshot.lignes, totaux: snapshot.totaux } : calculerDevis(draft, grille)), [draft, grille, snapshot]);
 
   if (!hydrated) return <Chargement />;
 
-  if (!envoye && !etape1Valide(draft)) {
+  if (!snapshot && !etape1Valide(draft)) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-canvas p-8 text-center">
         <p className="max-w-[460px] text-muted">
@@ -51,7 +52,7 @@ export function EcranDevis({ barre, panneauEnvoye }: ActionsDevis) {
     );
   }
 
-  const aTraiter = envoye ? [] : [...piecesAAnalyser(draft), ...piecesAOublier(draft)];
+  const aTraiter = snapshot ? [] : [...piecesAAnalyser(draft), ...piecesAOublier(draft)];
 
   const relancerPiece = (pieceId: string) => {
     const d = useStore.getState().draft;
@@ -62,6 +63,17 @@ export function EcranDevis({ barre, panneauEnvoye }: ActionsDevis) {
     if (piece.corrige) setAConfirmer(plan);
     else setRelance(plan);
   };
+
+  const envoyer = (email: string) => {
+    flushSaisies();
+    const { devis, blobKeys } = saveDevisSnapshot(email);
+    setEnvoi(false);
+    void deletePhotos(blobKeys).catch(() => undefined);
+    toast(`Devis ${devis.numero} envoyé à ${email}`);
+    void actions.telecharger(devis);
+  };
+
+  const sentAt = snapshot?.sentAt;
 
   return (
     <>
@@ -96,19 +108,74 @@ export function EcranDevis({ barre, panneauEnvoye }: ActionsDevis) {
           ) : null}
           <DevisDocument devis={draft} lignes={resultat.lignes} totaux={resultat.totaux} />
         </div>
-        {envoye ? panneauEnvoye : <InventoryPanel draft={draft} grille={grille} />}
+
+        {snapshot ? (
+          <aside className="flex w-[360px] shrink-0 flex-col gap-4 border-l border-line bg-surface px-5 py-[18px]" aria-label="Devis envoyé">
+            <div>
+              <h2 className="m-0 text-[15px] font-semibold">Devis {draft.numero} envoyé</h2>
+              <p className="mt-1 text-[12.5px] text-muted">
+                {sentAt ? `Le ${dateCH(sentAt)} à ${heureCH(sentAt)}, à ${snapshot.sentTo ?? draft.client.email}.` : null} Le document est figé : grille version{" "}
+                {snapshot.grilleVersion}, {resultat.lignes.length} lignes.
+              </p>
+            </div>
+            <div className="rounded-rs bg-surface-2 px-4 py-3">
+              <p className="m-0 flex justify-between">
+                <span>Total TTC</span>
+                <span className="montant font-semibold">{chf(resultat.totaux.totalTTC)}</span>
+              </p>
+            </div>
+            <p className="m-0 text-[12.5px] text-muted">Pour changer une quantité ou un prix, dupliquez le devis : la copie reprend tout, avec la grille actuelle.</p>
+            <div className="mt-auto flex flex-col gap-2">
+              <ButtonLink href="/nouveau/client?reprise=1" variant="brand">
+                Nouveau devis
+              </ButtonLink>
+              <ButtonLink href="/devis">Voir dans Mes devis</ButtonLink>
+            </div>
+          </aside>
+        ) : (
+          <InventoryPanel draft={draft} grille={grille} />
+        )}
       </div>
 
-      {barre ?? (
+      {snapshot ? (
+        <BottomBar left="Envoyé. Pour corriger, dupliquez le devis.">
+          <Button onClick={() => actions.dupliquer(draft)}>Dupliquer pour corriger</Button>
+          <Button onClick={() => void actions.telecharger(draft)} disabled={actions.enTelechargement}>
+            {actions.enTelechargement ? "Préparation du PDF…" : "Télécharger le PDF"}
+          </Button>
+          <Button variant="primary" onClick={() => actions.renvoyer(draft)}>
+            Renvoyer le devis
+          </Button>
+        </BottomBar>
+      ) : (
         <BottomBar left="Rien n'est envoyé tant que vous n'avez pas validé.">
           <ButtonLink href="/nouveau/client">Modifier</ButtonLink>
-          <Button disabled>Télécharger le PDF</Button>
-          <Button variant="primary" disabled>
-            Envoyer à {draft.client.email}
+          <Button onClick={() => void actions.telecharger(draft)} disabled={actions.enTelechargement}>
+            {actions.enTelechargement ? "Préparation du PDF…" : "Télécharger le PDF"}
+          </Button>
+          <Button variant="primary" onClick={() => setEnvoi(true)} className="max-w-[340px]">
+            <span className="truncate">Envoyer à {draft.client.email}</span>
           </Button>
         </BottomBar>
       )}
 
+      {envoi ? (
+        <EnvoiDialog
+          titre="Envoyer le devis"
+          emailInitial={draft.client.email}
+          confirmLabel="Envoyer et télécharger le PDF"
+          avertissement={
+            resultat.totaux.nettoyageAPreciser
+              ? "Le nettoyage est encore « à préciser » (surface manquante) : il figurera à CHF 0.00."
+              : aTraiter.length > 0
+                ? "Des pièces n'ont pas été analysées avec leurs dernières photos : vérifiez le bandeau au-dessus du document."
+                : undefined
+          }
+          onCancel={() => setEnvoi(false)}
+          onConfirm={envoyer}
+        />
+      ) : null}
+      {actions.dialogues}
       {relance ? (
         <GenerationOverlay key={relance.id} pieceIds={relance.pieces} oublier={relance.oublier} onTermine={() => setRelance(null)} onFermer={() => setRelance(null)} />
       ) : null}

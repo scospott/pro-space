@@ -69,7 +69,7 @@ export function InventoryPanel({ draft, grille }: InventoryPanelProps) {
           <div className="min-w-0 flex-1 pt-1">
             <b className="block truncate font-medium">{titre}</b>
             <Confiance confiance={item.confiance} />
-            {categorie && item.label !== categorie.label ? <span className="block truncate text-[12px] text-muted">{item.label}</span> : null}
+            {categorie && item.label !== categorie.label && item.label !== item.categoryId ? <span className="block truncate text-[12px] text-muted">{item.label}</span> : null}
             {!categorie ? <span className="block text-[12px] text-warn">Catégorie supprimée de la grille : retirez cette ligne.</span> : null}
             {item.note ? <span className="block text-[12px] text-warn">{item.note}</span> : null}
           </div>

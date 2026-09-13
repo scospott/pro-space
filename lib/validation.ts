@@ -32,6 +32,10 @@ export const NOM_COURT_CHAMP: Record<ChampEtape1, string> = {
 
 const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+export function emailValide(email: string): boolean {
+  return RE_EMAIL.test(email.trim());
+}
+
 export function erreursEtape1(d: Devis): ErreursEtape1 {
   const e: ErreursEtape1 = {};
   const { client, lieu } = d;

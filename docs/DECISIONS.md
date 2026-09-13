@@ -53,4 +53,14 @@ Une ligne par décision : choix, raison.
 - Nettoyage activé sans surface : champ « Surface » directement dans le panneau (écrit dans le lieu, donc repris à l'étape 1).
 - Remise : segmenté % / CHF et montant ; champ vide = pas de remise.
 - Bandeau au-dessus du document pour chaque pièce à reprendre (photos changées, nouvelles photos, analyse en échec, photos toutes retirées), avec un bouton qui relance seulement cette pièce.
+- `/api/pdf` n'imprime que le snapshot reçu (lignes et totaux) : pour un brouillon, la tablette calcule le snapshot avec la grille du store avant l'envoi, le serveur ne recalcule rien et ne connaît pas la grille.
+- Logo du PDF lu en Buffer (`fs.readFileSync`) plutôt que par chemin : même fichier, moins de dépendance au résolveur d'images de react-pdf. Césure automatique désactivée.
+- En-tête de tableau du PDF en `fixed` dans le conteneur du tableau (répété sur chaque page), lignes en `wrap={false}`, titres de section avec `minPresenceAhead`, bloc totaux insécable, pied de page « page n / N ».
+- Mode démo actif sauf `NEXT_PUBLIC_DEMO=false` : une variable oubliée sur Vercel ne vide pas la démo de ses exemples (l'envoi reste simulé dans tous les cas dans ce build).
+- Devis d'exemple : Marc Bovet (0410), Régie Naef (0411) et Succession Dubey (0412) ; Isabelle Rochat n'est pas un exemple, c'est le dossier de démonstration qui reçoit le numéro 0413.
+- Renvoyer : mêmes lignes et même numéro (snapshot inchangé), dialogue avec e-mail modifiable, PDF re-téléchargé, toast « renvoyé à ».
+- Sur un devis envoyé, le bouton « Modifier » devient directement « Dupliquer pour corriger » ; les étapes 1 et 2 affichent une carte « Devis envoyé » avec les mêmes actions.
+- Dupliquer quand un brouillon non vide existe : confirmation, puis les photos de ce brouillon sont supprimées d'IndexedDB ; la copie ouvre directement l'écran devis, recalculé avec la grille actuelle.
+- Mes devis : le brouillon en cours apparaît en tête (« À attribuer », statut Brouillon, action Reprendre) pour que la colonne statut brouillon / envoyé ait un sens ; actions Ouvrir, Renvoyer, Dupliquer (libellé court, nom accessible complet) pour tenir en 1024 px.
+- Avertissement dans le dialogue d'envoi si le nettoyage est « à préciser » ou si des pièces n'ont pas été analysées avec leurs dernières photos.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.
