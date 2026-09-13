@@ -63,4 +63,11 @@ Une ligne par décision : choix, raison.
 - Dupliquer quand un brouillon non vide existe : confirmation, puis les photos de ce brouillon sont supprimées d'IndexedDB ; la copie ouvre directement l'écran devis, recalculé avec la grille actuelle.
 - Mes devis : le brouillon en cours apparaît en tête (« À attribuer », statut Brouillon, action Reprendre) pour que la colonne statut brouillon / envoyé ait un sens ; actions Ouvrir, Renvoyer, Dupliquer (libellé court, nom accessible complet) pour tenir en 1024 px.
 - Avertissement dans le dialogue d'envoi si le nettoyage est « à préciser » ou si des pièces n'ont pas été analysées avec leurs dernières photos.
+- Écran grille : paramètres (en cinq sections, sur deux colonnes) au-dessus du catalogue plutôt qu'à côté : à 1024 px, deux colonnes côte à côte ne laissent pas la place aux sept champs par catégorie.
+- Formulaire de grille édité en local (texte brut, virgule acceptée) et validé à chaque frappe par `lib/grilleForm.ts` (testé) ; « Enregistrer la grille » désactivé s'il y a une erreur ou aucune modification (évite d'incrémenter la version pour rien). Quitter l'écran sans enregistrer abandonne les modifications, comme « Annuler ».
+- Bornes de validation : TVA et majorations ≤ 100 %, arrondi TTC ≤ 1, plafond ≥ majoration par étage, valeurs du catalogue ≥ 0 avec des maxima larges (100 m³, 10 t, 1000 min, CHF 100'000).
+- Nouvelle catégorie : libellé et exemples saisis dans un dialogue, identifiant snake_case généré depuis le libellé (suffixe _2, _3 si déjà pris), valeurs de départ modestes à ajuster.
+- Suppression d'une catégorie : refusée avec un message si le brouillon en cours l'utilise, confirmée sinon, effective à l'enregistrement.
+- Taxe unitaire éditable seulement pour la filière « Taxe spéciale » ; elle est retirée de la catégorie si la filière change.
+- `GROUPES` déplacé dans `lib/libelles.ts` : `lib/grille.default.ts` n'est importé que par le store (valeurs initiales et réinitialisation), les tests et le script de test réel ; le moteur, l'extraction, les exemples et l'écran grille lisent la grille du store.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.

@@ -10,7 +10,17 @@ import type {
   TypePrestation,
 } from "./types";
 
-export const CIVILITES: { value: Civilite; label: string }[] = [
+/** Groupes d'affichage du catalogue (docs/SPEC.md §5.2). */
+export const GROUPES = ["Séjour", "Cuisine", "Chambre", "Salle de bain", "Cave et extérieur", "Divers"] as const;
+
+export const FILIERES_DEFAUT: { value: Filiere; label: string }[] = [
+  { value: "dechetterie", label: "Déchetterie" },
+  { value: "ressourcerie", label: "Ressourcerie" },
+  { value: "sens", label: "Reprise gratuite (SENS)" },
+  { value: "special", label: "Taxe spéciale" },
+];
+
+export const CIVILITES:{ value: Civilite; label: string }[] = [
   { value: "madame", label: "Madame" },
   { value: "monsieur", label: "Monsieur" },
   { value: "societe", label: "Société" },

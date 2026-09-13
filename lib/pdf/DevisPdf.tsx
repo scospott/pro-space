@@ -115,9 +115,7 @@ export function DevisPdf({ devis }: { devis: Devis }) {
           <Image src={{ data: logo(), format: "png" }} style={s.logo} />
           <View style={s.blocTitre}>
             <Text style={s.titre}>Devis</Text>
-            <Text style={s.meta}>N° {entete.numero}</Text>
-            <Text style={s.meta}>{entete.lieuDate}</Text>
-            <Text style={s.meta}>{entete.validite}</Text>
+            <Text style={s.meta}>{`N° ${entete.numero}\n${entete.lieuDate}\n${entete.validite}`}</Text>
           </View>
         </View>
 

@@ -8,6 +8,7 @@ import {
   type InputHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
+import { lireNombre } from "@/lib/nombre";
 import { enregistrerFlush } from "@/lib/saisie";
 import { inputClass, textareaClass } from "./Field";
 
@@ -123,13 +124,7 @@ export function SaisieZone({ value, onCommit, className = "", onBlur, ...rest }:
   );
 }
 
-/** undefined = champ vide, null = saisie invalide. */
-export function lireNombre(s: string): number | undefined | null {
-  const t = s.trim().replace(/[\s']/g, "").replace(",", ".");
-  if (t === "") return undefined;
-  const n = Number(t);
-  return Number.isFinite(n) ? n : null;
-}
+export { lireNombre };
 
 const nombresEquivalents: Equivalence = (a, b) => lireNombre(a) === lireNombre(b);
 

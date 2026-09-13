@@ -3,8 +3,6 @@ import type { Categorie, Grille, GrilleParams } from "./types";
 // Grille tarifaire v1 (docs/SPEC.md §5). Tout est HT, en CHF.
 // Seuls le store et les tests importent ce fichier : le moteur et l'extraction lisent la grille du store.
 
-export const GROUPES = ["Séjour", "Cuisine", "Chambre", "Salle de bain", "Cave et extérieur", "Divers"] as const;
-
 const PARAMS: GrilleParams = {
   tauxHoraireEquipe: 95,
   tarifKm: 1.2,
