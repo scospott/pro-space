@@ -7,4 +7,19 @@ Une ligne par décision : choix, raison.
 - Ajout des tokens `danger` / `danger-soft` et `scrim` : la maquette n'a pas de couleur d'erreur ni de voile de modale, indispensables aux messages de validation et aux dialogues.
 - `@types/node` passé de 20 à 22 : conflit de dépendances pairs avec vitest 5, et Node 22 est le runtime utilisé.
 - Polices Fontsource importées dans `app/layout.tsx` (import JS documenté par Fontsource) plutôt que par `@import` CSS.
+- `InventaireItem.filiereManuelle` ajouté : sans ce drapeau, impossible de distinguer un choix manuel (§6.1 point 3, qui écrase tout) d'une filière calculée qui doit suivre un changement de destination.
+- `Piece.analyse.hash` et `Piece.corrige` ajoutés : empreinte des photos au moment de l'analyse (ré-analyse partielle) et marqueur de corrections manuelles (confirmation avant d'écraser).
+- `Totaux` complété (`majorationEtagePct`, `nettoyageAPreciser`, `minimumHT`, `tvaPct`, poids par filière) et `LigneDevis` complétée (`piece`, `surfaceM2`, `avertissement`) : le document et le PDF se rendent depuis le seul snapshot.
+- `Totaux.remise` est négatif (ou 0) : il entre tel quel dans la somme 1 à 10 du §6.2.
+- Remise plafonnée à la somme des postes 1 à 9 : évite un sous-total négatif (le minimum de facturation s'applique ensuite).
+- Minimum de facturation affiché dans le bloc totaux (pas dans le tableau) : conforme au §9 et à la maquette.
+- Lignes à 0 (stationnement privé, portage inclus, pas de majoration) non affichées ; ressourcerie et SENS affichées à 0.00 dès qu'elles ont du volume (§6.2 point 7).
+- Taxes spéciales regroupées par catégorie (« Taxe d'élimination, pneu », 4 × CHF 6.00) dans la section Tri et élimination.
+- Durée estimée : `Math.round` des minutes (231 × 1.3 = 300.3 → 300), affichage arrondi au quart d'heure.
+- Dates formatées en heure de Zurich (`Intl`, fuseau Europe/Zurich) : identiques sur la tablette et sur le serveur Vercel en UTC.
+- Identifiants par `crypto.getRandomValues` et non `crypto.randomUUID` : ce dernier n'existe pas hors HTTPS, or la tablette teste en http://IP:3000.
+- Brouillon par défaut : civilité Madame, appartement, rez (étage 0), sans ascenseur, place privée, débarras, tri sur place ; les champs obligatoires à valeur par défaut sont donc toujours valides, le panneau droit rend visible leur effet.
+- Pièces par défaut créées avec le brouillon et remplacées au changement de type de logement tant qu'aucune photo ni inventaire n'existe.
+- Réinitialiser la grille incrémente aussi la version : c'est une modification des prix appliqués aux futurs devis.
+- Store persistant en `skipHydration` + `useSyncExternalStore` sur `persist.hasHydrated()` : pas de décalage de rendu serveur/client.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.

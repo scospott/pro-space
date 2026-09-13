@@ -6,6 +6,7 @@ import "./globals.css";
 import { Rail } from "@/components/Rail";
 import { Topbar } from "@/components/Topbar";
 import { Toast } from "@/components/Toast";
+import { StoreHydrator } from "@/components/StoreHydrator";
 
 export const metadata: Metadata = {
   title: "Pro Space Devis",
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </div>
         <Toast />
+        <StoreHydrator />
       </body>
     </html>
   );
