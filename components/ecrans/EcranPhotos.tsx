@@ -5,7 +5,7 @@ import { useState, type ChangeEvent, type ReactNode } from "react";
 import { inventaireAJour, piecesAAnalyser, photosParPiece } from "@/lib/analyse";
 import { nouvelId } from "@/lib/id";
 import { ImageIllisibleError, preparerImage } from "@/lib/image";
-import { deletePhoto, deletePhotos, putPhoto, QuotaPhotosError } from "@/lib/photos";
+import { deletePhoto, deletePhotos, putPhoto, QuotaPhotosError, StockageIndisponibleError } from "@/lib/photos";
 import { MAX_PHOTOS_LOGEMENT, MAX_PHOTOS_PIECE } from "@/lib/pieces";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/useHydrated";
@@ -131,8 +131,15 @@ export function EcranPhotos({ onGenerer, overlay }: EcranPhotosProps) {
           };
           break;
         }
-        if (err instanceof ImageIllisibleError) illisibles++;
-        else illisibles++;
+        if (err instanceof StockageIndisponibleError) {
+          alerteFinale = {
+            ton: "danger",
+            texte:
+              "La tablette refuse d'enregistrer les photos (stockage du navigateur indisponible, par exemple en navigation privée). Ouvrez l'application dans un onglet normal, puis réessayez.",
+          };
+          break;
+        }
+        if (err instanceof ImageIllisibleError || err instanceof Error) illisibles++;
       }
       setTraitement({ fait: i + 1, total: fichiers.length });
     }

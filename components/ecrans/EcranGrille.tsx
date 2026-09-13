@@ -118,13 +118,13 @@ function Formulaire({ grille, onAnnuler }: { grille: Grille; onAnnuler: () => vo
                         <input
                           id={id}
                           inputMode="decimal"
-                          className={`${petitInput} w-[96px]`}
+                          className={`${petitInput} w-[96px]!`}
                           value={form.params[def.cle]}
                           aria-invalid={Boolean(erreur) || undefined}
                           aria-describedby={erreur ? `${id}-erreur` : undefined}
                           onChange={(e) => majParam(def.cle, e.target.value)}
                         />
-                        <span className="w-[68px] text-[12.5px] text-muted">{def.unite}</span>
+                        <span className="w-[76px] text-[12.5px] whitespace-nowrap text-muted">{def.unite}</span>
                       </div>
                     </div>
                   );

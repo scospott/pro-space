@@ -86,7 +86,7 @@ export function InventoryPanel({ draft, grille }: InventoryPanelProps) {
           <div className="flex h-12 shrink-0 items-center rounded-rs border border-line" role="group" aria-label={`Quantité de ${titre}`}>
             <button
               type="button"
-              className="h-full w-11 text-[20px] text-brand disabled:opacity-35"
+              className="h-full w-12 text-[20px] text-brand disabled:opacity-35"
               disabled={item.quantite <= 1}
               onClick={() => updateItem(item.id, { quantite: item.quantite - 1 })}
               aria-label={`Diminuer la quantité de ${titre}`}
@@ -98,7 +98,7 @@ export function InventoryPanel({ draft, grille }: InventoryPanelProps) {
             </span>
             <button
               type="button"
-              className="h-full w-11 text-[20px] text-brand"
+              className="h-full w-12 text-[20px] text-brand"
               onClick={() => updateItem(item.id, { quantite: item.quantite + 1 })}
               aria-label={`Augmenter la quantité de ${titre}`}
             >

@@ -72,4 +72,5 @@ Une ligne par décision : choix, raison.
 - `GROUPES` déplacé dans `lib/libelles.ts` : `lib/grille.default.ts` n'est importé que par le store (valeurs initiales et réinitialisation), les tests et le script de test réel ; le moteur, l'extraction, les exemples et l'écran grille lisent la grille du store.
 - Parcours Playwright joué contre un build de production (`npm run build && next start`, port 3300, `NEXT_PUBLIC_DEMO=true`) : il couvre aussi la route PDF réelle (fichier téléchargé, plus de 20 Ko, en-tête %PDF). Seuls `/api/analyse` et `/api/trajet` sont simulés.
 - Le test importe l'inventaire Rochat depuis `lib/fixtures/rochat.ts` (le même que le test golden) : le total attendu CHF 2'653.40 et le total après modification du canapé (CHF 2'688.55, vérifié aussi en test unitaire) ne sont pas recopiés à la main dans deux endroits différents.
+- Erreur IndexedDB autre que le quota (navigation privée, stockage refusé) : message dédié qui dit quoi faire, plutôt que « photo illisible ».
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.

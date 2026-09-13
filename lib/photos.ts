@@ -15,6 +15,13 @@ export class QuotaPhotosError extends Error {
   }
 }
 
+export class StockageIndisponibleError extends Error {
+  constructor() {
+    super("Stockage des photos indisponible");
+    this.name = "StockageIndisponibleError";
+  }
+}
+
 function estQuota(e: unknown): boolean {
   return e instanceof DOMException && (e.name === "QuotaExceededError" || e.code === 22);
 }
@@ -24,7 +31,7 @@ export async function putPhoto(key: string, blob: Blob): Promise<void> {
     await set(key, blob, magasin());
   } catch (e) {
     if (estQuota(e)) throw new QuotaPhotosError();
-    throw e;
+    throw new StockageIndisponibleError();
   }
 }
 
