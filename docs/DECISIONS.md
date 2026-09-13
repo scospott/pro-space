@@ -35,4 +35,14 @@ Une ligne par décision : choix, raison.
 - Renommer et supprimer la pièce active : boutons dans l'en-tête de la zone photos (pas de geste ni de menu au survol). Suppression confirmée dès que la pièce contient des photos ou un inventaire.
 - Ajout de pièce : dialogue avec nom libre et suggestions tactiles (Chambre 2, Bureau, Buanderie, Garage, Grenier, Extérieur).
 - Vignettes via `next/image` en `unoptimized` sur l'URL blob : pas d'avertissement eslint, pas d'optimisation serveur inutile.
+- `POST /api/analyse` reçoit aussi `catalogue` (id, libellé, exemples) : l'extraction doit lire la grille du store, qui ne vit que sur la tablette. Le serveur valide la forme (ids snake_case, 300 entrées au plus).
+- Post-traitement exécuté côté client, avec la grille et la destination du store ; la route renvoie les objets bruts normalisés (`{ items, remarques, usage }`).
+- Appel du modèle avec `tool_choice: { type: "tool" }` et `thinking: { type: "disabled" }` : la sortie forcée par outil est incompatible avec la réflexion ; Sonnet 5 accepte la réflexion désactivée. Pas de `strict: true` : le schéma du §7 contient `minimum`/`maximum`, la sortie est revalidée par `lireReponseOutil`.
+- Chaque photo est précédée d'un bloc texte « Photo n » : le modèle peut renvoyer les index 1..n demandés par le schéma.
+- Fusion de doublons : l'état retenu est le plus dégradé (hs > usé > bon), choix prudent qui envoie en déchetterie plutôt qu'en ressourcerie ; libellés distincts concaténés.
+- Réponses du modèle mal formées tolérées (quantité arrondie et bornée à 1..999, confiance bornée à 0..1, état inconnu → usé, entrées sans catégorie ignorées) plutôt qu'un échec de toute la pièce.
+- Message d'échec : « L'analyse de la pièce « Salon » a échoué » (avec la cause) plutôt que « du salon » : l'article dépend du nom libre de la pièce.
+- Overlay : étape « Calcul du devis selon la grille Pro Space » affichée 0,5 s (le calcul est local et instantané) pour que l'enchaînement reste lisible ; compteur de secondes et message rassurant après 25 s.
+- Pièces analysées dont toutes les photos ont été retirées : leurs objets détectés sont retirés à la génération suivante, les ajouts manuels restent.
+- Confirmation avant ré-analyse dès qu'une pièce concernée porte des corrections manuelles (quantité, filière, retrait ou ajout d'objet).
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.

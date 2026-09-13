@@ -1,5 +1,5 @@
-import { EcranPhotos } from "@/components/ecrans/EcranPhotos";
+import { EcranPhotosGeneration } from "@/components/ecrans/EcranPhotosGeneration";
 
 export default function PhotosPage() {
-  return <EcranPhotos />;
+  return <EcranPhotosGeneration />;
 }
