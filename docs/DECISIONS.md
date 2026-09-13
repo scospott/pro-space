@@ -45,4 +45,12 @@ Une ligne par décision : choix, raison.
 - Overlay : étape « Calcul du devis selon la grille Pro Space » affichée 0,5 s (le calcul est local et instantané) pour que l'enchaînement reste lisible ; compteur de secondes et message rassurant après 25 s.
 - Pièces analysées dont toutes les photos ont été retirées : leurs objets détectés sont retirés à la génération suivante, les ajouts manuels restent.
 - Confirmation avant ré-analyse dès qu'une pièce concernée porte des corrections manuelles (quantité, filière, retrait ou ajout d'objet).
+- Contenu du document (en-tête, destinataire, objet, sections, TVA, durée, conditions, nom de fichier) centralisé dans `lib/document.ts`, partagé par l'aperçu HTML et le PDF : les deux rendus ne peuvent pas diverger.
+- Numéro affiché « N° brouillon » tant que le devis n'est pas envoyé ; date du document = date du jour, puis date d'envoi figée dans le snapshot ; validité +30 jours.
+- Filière dans le panneau : sélecteur natif (46 px) plutôt qu'un segmenté à trois options, illisible dans 360 px ; catégories à taxe spéciale (pneus, produits chimiques) sans sélecteur, avec la taxe unitaire affichée.
+- Bouton « − » désactivé à 1 : on retire une ligne avec « × » (cible de 48 px), jamais par erreur en décrémentant.
+- Objet ajouté à la main : état « usé » par défaut (filière selon la règle de destination), confiance nulle, affiché « Ajouté à la main ».
+- Nettoyage activé sans surface : champ « Surface » directement dans le panneau (écrit dans le lieu, donc repris à l'étape 1).
+- Remise : segmenté % / CHF et montant ; champ vide = pas de remise.
+- Bandeau au-dessus du document pour chaque pièce à reprendre (photos changées, nouvelles photos, analyse en échec, photos toutes retirées), avec un bouton qui relance seulement cette pièce.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.
