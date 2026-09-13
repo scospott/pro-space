@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pro Space Devis, maquette v0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens (à caler sur les couleurs réelles du logo Pro Space) ---------- */
+:root{
+  --ink:#152128; --muted:#5C6B73; --line:#D8DEE2; --line-soft:#EBEFF1;
+  --canvas:#E9EDF0; --surface:#FFFFFF; --surface-2:#F5F7F8;
+  --brand:#0E5A66; --brand-ink:#0A434C; --brand-soft:#E2EEF0;
+  --accent:#E8772E; --accent-ink:#C9611E;
+  --ok:#2E7D5B; --ok-soft:#E3F1E9; --warn:#B7791F; --warn-soft:#FBF1DF;
+  --r:10px; --rs:6px;
+  --font:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.page{padding:20px 20px 40px;overflow-x:hidden}
+.caption{max-width:1024px;margin:0 auto 12px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.caption b{color:var(--ink);font-weight:600}
+.stage{max-width:1024px;margin:0 auto;position:relative}
+.device{width:1024px;height:768px;position:relative;background:var(--surface);border-radius:18px;box-shadow:0 1px 2px rgba(21,33,40,.08),0 12px 40px rgba(21,33,40,.14);overflow:hidden;display:flex;transform-origin:top left}
+
+/* ---------- Rail ---------- */
+.rail{width:76px;background:var(--brand);color:#fff;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px;flex-shrink:0}
+.rail .mark{width:38px;height:38px;margin-bottom:14px}
+.rail nav button{width:62px;height:62px;border-radius:12px;color:rgba(255,255,255,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:10.5px;font-weight:500}
+.rail nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rail nav button.on{background:rgba(255,255,255,.16);color:#fff}
+.rail .user{margin-top:auto;width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600}
+
+/* ---------- Main + topbar ---------- */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:64px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;gap:22px;flex-shrink:0}
+.topbar h1{font-size:18px;font-weight:600;margin:0;white-space:nowrap}
+.stepper{display:flex;align-items:center;gap:6px}
+.step{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;color:var(--muted);font-weight:500}
+.step i{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}
+.step.on{color:var(--brand);background:var(--brand-soft)}
+.step.on i{background:var(--brand);border-color:var(--brand);color:#fff}
+.step.done i{border-color:var(--ok);color:var(--ok)}
+.sep{width:18px;height:1px;background:var(--line)}
+.topbar .right{margin-left:auto;color:var(--muted);font-size:13px}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex}
+.body{flex:1;display:flex;min-height:0}
+.bar{height:74px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:0 24px;background:#fff;flex-shrink:0}
+.bar .left{margin-right:auto;color:var(--muted)}
+.btn{height:48px;padding:0 20px;border-radius:var(--rs);font-weight:600;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;white-space:nowrap}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-ink)}
+.btn.ghost{border-color:var(--line);color:var(--ink);background:#fff}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.brand{background:var(--brand);color:#fff}
+.btn.brand:hover{background:var(--brand-ink)}
+
+/* ---------- Écran 1, client ---------- */
+.form{flex:1;overflow:auto;padding:24px 28px 30px}
+.fs{margin-bottom:26px}
+.fs h2{font-size:15px;font-weight:600;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line-soft)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px 14px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f label{font-size:12.5px;color:var(--muted);font-weight:500}
+.f input,.f select,.f textarea{height:46px;border:1px solid var(--line);border-radius:var(--rs);padding:0 12px;background:#fff;width:100%}
+.f textarea{height:70px;padding:10px 12px;resize:none}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--rs);overflow:hidden;height:46px;background:#fff}
+.seg button{flex:1;font-weight:500;color:var(--muted);padding:0 8px}
+.seg button.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.seg button+button{border-left:1px solid var(--line)}
+.aside{width:320px;border-left:1px solid var(--line);background:var(--surface-2);padding:22px 22px 30px;overflow:auto;flex-shrink:0}
+.aside h3{font-size:13px;color:var(--muted);font-weight:500;margin:0 0 6px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px}
+.kv span:last-child{font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kv small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.note{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.5}
+
+/* ---------- Écran 2, photos ---------- */
+.rooms{width:250px;border-right:1px solid var(--line);padding:18px 14px;overflow:auto;flex-shrink:0}
+.rooms h2{font-size:13px;color:var(--muted);font-weight:500;margin:0 12px 10px}
+.room{width:100%;display:flex;justify-content:space-between;align-items:center;padding:0 12px;height:48px;border-radius:var(--rs);font-weight:500;text-align:left}
+.room.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.room em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:500}
+.room.add{color:var(--brand);justify-content:flex-start;gap:8px;margin-top:8px;font-weight:600}
+.photos{flex:1;padding:18px 24px;overflow:auto}
+.photos .head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.photos .head h2{margin:0;font-size:17px;font-weight:600}
+.photos .head p{margin:0;color:var(--muted)}
+.count{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{aspect-ratio:4/3;border-radius:var(--r);position:relative;overflow:hidden;background:#b9b3ab}
+.tile span{position:absolute;left:10px;bottom:8px;color:#fff;font-size:12px;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.tile b{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;cursor:pointer}
+.tile.add{border:1.5px dashed var(--line);background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--brand);font-weight:600;cursor:pointer}
+.tile.add svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.t-salon{background:linear-gradient(135deg,#9a8675,#5f5044)}
+.t-cuisine{background:linear-gradient(135deg,#c9c3b6,#8d8577)}
+.t-chambre{background:linear-gradient(135deg,#a3908a,#6b5a55)}
+.t-sdb{background:linear-gradient(135deg,#b7c4c8,#7d8c91)}
+.t-cave{background:linear-gradient(135deg,#6d6a66,#3c3a37)}
+
+/* ---------- Écran 3, devis ---------- */
+.docwrap{flex:1;overflow:auto;background:var(--canvas);padding:22px}
+.doc{background:#fff;max-width:640px;margin:0 auto;padding:36px 40px 32px;box-shadow:0 1px 3px rgba(21,33,40,.14);font-size:12.5px}
+.doc header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px}
+.doc .logo img{height:44px;display:block}
+.doc .wordmark{display:none;align-items:center;gap:8px;font-weight:600;font-size:18px;color:var(--brand)}
+.doc .wordmark svg{width:28px;height:28px}
+.doc .title{text-align:right}
+.doc .title h2{margin:0;font-size:26px;font-weight:600;letter-spacing:-.01em}
+.doc .title p{margin:4px 0 0;color:var(--muted)}
+.addr{display:flex;justify-content:space-between;gap:24px;margin-bottom:22px;line-height:1.5}
+.addr strong{display:block;margin-bottom:2px}
+.addr .muted{color:var(--muted)}
+.objet{margin:0 0 18px;padding:10px 12px;background:var(--surface-2);border-radius:var(--rs)}
+table.lines{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.lines th{font-weight:500;color:var(--muted);text-align:left;font-size:11.5px;padding:0 8px 8px 0;border-bottom:1px solid var(--line)}
+.lines td{padding:7px 8px 7px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.lines th.num,.lines td.num{text-align:right;white-space:nowrap;padding-right:0}
+.lines td .room{display:inline;height:auto;padding:0;color:var(--muted);font-weight:400;font-size:11.5px;margin-left:6px;width:auto}
+.lines tr.sec td{font-weight:600;padding-top:16px;border-bottom:1px solid var(--line);color:var(--brand-ink)}
+.lines td.d{color:var(--muted);font-size:11.5px}
+.totals{margin:16px 0 0 auto;width:270px;font-variant-numeric:tabular-nums}
+.totals div{display:flex;justify-content:space-between;padding:6px 0}
+.totals .tt{border-top:1.5px solid var(--ink);margin-top:6px;padding-top:10px;font-weight:600;font-size:15px}
+.totals .min{color:var(--warn);font-size:12px}
+.cond{margin-top:26px;color:var(--muted);font-size:11px;line-height:1.55;border-top:1px solid var(--line-soft);padding-top:12px}
+.panel{width:360px;border-left:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;background:#fff}
+.panel .ph{padding:18px 20px 12px;border-bottom:1px solid var(--line-soft)}
+.panel h2{margin:0;font-size:15px;font-weight:600}
+.panel .ph p{margin:4px 0 0;color:var(--muted);font-size:12.5px}
+.inv{flex:1;overflow:auto;padding:4px 0 16px}
+.inv h3{font-size:12.5px;color:var(--muted);font-weight:500;margin:14px 20px 4px;display:flex;justify-content:space-between}
+.it{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 20px;border-bottom:1px solid var(--line-soft)}
+.it .n{flex:1;min-width:0}
+.it .n b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conf{font-size:11.5px;display:inline-flex;align-items:center;gap:5px;margin-top:1px;color:var(--ok)}
+.conf::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.conf.warn{color:var(--warn)}.conf.warn::before{background:var(--warn)}
+.conf.man{color:var(--muted)}.conf.man::before{background:var(--muted)}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:var(--rs);height:36px}
+.qty button{width:34px;height:100%;font-size:18px;color:var(--brand)}
+.qty span{min-width:26px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.it .rm{width:30px;height:30px;color:var(--muted);border-radius:50%;font-size:17px}
+.it .rm:hover{background:var(--surface-2);color:var(--ink)}
+.addit{margin:12px 20px 0;color:var(--brand);font-weight:600}
+.opt{padding:14px 20px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.opt label{display:flex;flex-direction:column;font-weight:500}
+.opt small{color:var(--muted);font-weight:400}
+.tog{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex-shrink:0}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}
+.tog.on{background:var(--ok)}.tog.on::after{transform:translateX(18px)}
+@media (prefers-reduced-motion:reduce){.tog::after{transition:none}}
+
+/* ---------- Écran 4, mes devis ---------- */
+.list{flex:1;overflow:auto;padding:22px 28px}
+table.dv{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.dv th{text-align:left;font-weight:500;color:var(--muted);font-size:12.5px;padding:0 10px 10px 0;border-bottom:1px solid var(--line)}
+.dv td{padding:12px 10px 12px 0;border-bottom:1px solid var(--line-soft)}
+.dv td.num,.dv th.num{text-align:right}
+.dv .btn{height:38px;padding:0 14px}
+.search{height:46px;border:1px solid var(--line);border-radius:var(--rs);padding:0 12px;width:320px;background:#fff;margin-bottom:16px}
+
+/* ---------- Écran 5, grille ---------- */
+.gr{flex:1;overflow:auto;padding:22px 28px}
+.gr .cols{display:grid;grid-template-columns:330px 1fr;gap:28px;align-items:start}
+.gr h2{font-size:15px;font-weight:600;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line-soft)}
+.params .kv{align-items:center}
+.params input{width:96px;height:38px;border:1px solid var(--line);border-radius:var(--rs);text-align:right;padding:0 10px;font-variant-numeric:tabular-nums;background:#fff}
+table.cat{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.cat th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;padding:0 8px 8px 0;border-bottom:1px solid var(--line)}
+.cat td{padding:5px 8px 5px 0;border-bottom:1px solid var(--line-soft)}
+.cat input{width:80px;height:38px;border:1px solid var(--line);border-radius:var(--rs);text-align:right;padding:0 10px;background:#fff}
+.cat td.name{font-weight:500}
+
+/* ---------- Overlay génération + toast ---------- */
+.overlay{position:absolute;inset:0;background:rgba(21,33,40,.55);display:none;align-items:center;justify-content:center;z-index:5}
+.overlay.on{display:flex}
+.gen{background:#fff;border-radius:16px;width:440px;padding:28px 30px}
+.gen h2{margin:0 0 4px;font-size:18px}
+.gen p{margin:0 0 16px;color:var(--muted)}
+.gen ul{list-style:none;padding:0;margin:0}
+.gen li{display:flex;align-items:center;gap:12px;height:40px;border-bottom:1px solid var(--line-soft);color:var(--muted)}
+.gen li i{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;flex-shrink:0}
+.gen li.run{color:var(--ink)}.gen li.run i{border-color:var(--brand);border-top-color:transparent;animation:spin .9s linear infinite}
+.gen li.ok{color:var(--ink)}.gen li.ok i{background:var(--ok);border-color:var(--ok);color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.gen li.run i{animation:none;border-top-color:var(--brand)}}
+.gen .foot{margin-top:16px;font-size:12px;color:var(--muted);line-height:1.5}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:999px;font-weight:500;display:none;z-index:6;white-space:nowrap}
+.toast.on{display:block}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="caption">
+    <div><b>Pro Space Devis</b>, maquette v0. Aperçu tablette 1024 × 768.</div>
+    <div>Les étapes, les boutons et les quantités sont cliquables.</div>
+  </div>
+  <div class="stage">
+  <div class="device" id="device">
+
+    <aside class="rail">
+      <svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="3" width="34" height="34" rx="9" fill="none" stroke="#fff" stroke-width="2.5"/><rect x="12" y="12" width="16" height="16" rx="3" fill="#E8772E"/></svg>
+      <nav>
+        <button class="on" data-nav="new">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Nouveau devis
+        </button>
+        <button data-nav="list">
+          <svg viewBox="0 0 24 24"><path d="M6 4h9l5 5v11H6z"/><path d="M14 4v6h6M9 13h6M9 17h6"/></svg>
+          Mes devis
+        </button>
+        <button data-nav="grid">
+          <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h12M20 17h0"/><circle cx="16" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="18" cy="17" r="2"/></svg>
+          Grille tarifaire
+        </button>
+      </nav>
+      <div class="user" title="Ethan">E</div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h1 id="title">Nouveau devis</h1>
+        <div class="stepper" id="stepper">
+          <button class="step on" data-go="1"><i>1</i>Client et lieu</button>
+          <span class="sep"></span>
+          <button class="step" data-go="2"><i>2</i>Photos</button>
+          <span class="sep"></span>
+          <button class="step" data-go="3"><i>3</i>Devis</button>
+        </div>
+        <div class="right" id="status">Brouillon enregistré à 14:32</div>
+      </div>
+
+      <!-- ===== Écran 1 : client et lieu ===== -->
+      <section class="screen on" id="s1">
+        <div class="body">
+          <div class="form">
+            <div class="fs">
+              <h2>Client</h2>
+              <div class="grid">
+                <div class="f c2"><label>Civilité</label><select><option>Madame</option><option>Monsieur</option><option>Société</option></select></div>
+                <div class="f c5"><label>Prénom</label><input value="Isabelle"></div>
+                <div class="f c5"><label>Nom</label><input value="Rochat"></div>
+                <div class="f c6"><label>E-mail</label><input value="isabelle.rochat@bluewin.ch"></div>
+                <div class="f c6"><label>Téléphone</label><input value="079 412 88 30"></div>
+              </div>
+            </div>
+            <div class="fs">
+              <h2>Lieu de l'intervention</h2>
+              <div class="grid">
+                <div class="f c7"><label>Rue et numéro</label><input value="Avenue de Béthusy 24"></div>
+                <div class="f c2"><label>NPA</label><input value="1005"></div>
+                <div class="f c3"><label>Localité</label><input value="Lausanne"></div>
+                <div class="f c3"><label>Type</label><select><option>Appartement</option><option>Maison</option><option>Local commercial</option><option>Cave / garage seul</option></select></div>
+                <div class="f c2"><label>Pièces</label><input value="3,5"></div>
+                <div class="f c2"><label>Surface</label><input value="75 m²"></div>
+                <div class="f c2"><label>Étage</label><input value="3"></div>
+                <div class="f c3"><label>Ascenseur</label><div class="seg"><button>Oui</button><button class="on">Non</button></div></div>
+                <div class="f c4"><label>Portage entre le camion et l'entrée</label><input value="25 m"></div>
+                <div class="f c8"><label>Stationnement</label><select><option>Zone bleue, autorisation communale nécessaire</option><option>Place privée, accès direct</option><option>Rue sans restriction</option><option>Centre-ville, accès difficile</option></select></div>
+              </div>
+            </div>
+            <div class="fs">
+              <h2>Prestation</h2>
+              <div class="grid">
+                <div class="f c6"><label>Type</label><div class="seg"><button>Débarras</button><button>Nettoyage</button><button class="on">Débarras + nettoyage</button></div></div>
+                <div class="f c6"><label>Destination des objets</label><div class="seg"><button>Déchetterie</button><button>Ressourcerie</button><button class="on">Tri sur place</button></div></div>
+                <div class="f c4"><label>Date souhaitée</label><input value="Semaine du 21.09.2026"></div>
+                <div class="f c8"><label>Remarques pour le devis</label><input value="Vider entièrement, conserver le piano (non compté)"></div>
+              </div>
+            </div>
+          </div>
+          <div class="aside">
+            <h3>Ce que le calcul prendra en compte</h3>
+            <div class="kv"><span>Déplacement<small>Payerne → Lausanne, calculé sur l'adresse</small></span><span>49 km, 45 min</span></div>
+            <div class="kv"><span>Accès<small>3e étage sans ascenseur</small></span><span>+20 % manutention</span></div>
+            <div class="kv"><span>Portage<small>25 m, au-delà des 20 m inclus</small></span><span>CHF 30.00</span></div>
+            <div class="kv"><span>Stationnement<small>Zone bleue</small></span><span>CHF 60.00</span></div>
+            <div class="kv"><span>Nettoyage fin de bail<small>75 m²</small></span><span>CHF 750.00</span></div>
+            <p class="note">Les prix viennent de la grille Pro Space. Les photos servent uniquement à compter et classer les objets.</p>
+          </div>
+        </div>
+        <div class="bar">
+          <span class="left">Tous les champs obligatoires sont remplis</span>
+          <button class="btn ghost">Enregistrer le brouillon</button>
+          <button class="btn brand" data-go="2">Continuer vers les photos</button>
+        </div>
+      </section>
+
+      <!-- ===== Écran 2 : photos par pièce ===== -->
+      <section class="screen" id="s2">
+        <div class="body">
+          <div class="rooms">
+            <h2>Pièces</h2>
+            <div id="roomlist"></div>
+            <button class="room add"><span>+</span>Ajouter une pièce</button>
+          </div>
+          <div class="photos">
+            <div class="head"><h2 id="roomtitle">Salon</h2><p>Plusieurs angles de la même pièce sont bienvenus, les doublons sont fusionnés.</p><span class="count" id="count"></span></div>
+            <div class="tiles" id="tiles"></div>
+          </div>
+        </div>
+        <div class="bar">
+          <span class="left" id="barcount"></span>
+          <button class="btn ghost" data-go="1">Retour</button>
+          <button class="btn primary" id="generate">Générer le devis</button>
+        </div>
+      </section>
+
+      <!-- ===== Écran 3 : devis ===== -->
+      <section class="screen" id="s3">
+        <div class="body">
+          <div class="docwrap">
+            <article class="doc" id="doc"></article>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Inventaire détecté</h2><p id="invsub"></p></div>
+            <div class="inv" id="inv"></div>
+            <div class="opt">
+              <label>Nettoyage fin de bail<small>75 m² × CHF 10.00</small></label>
+              <button class="tog on" id="tognet" aria-label="Inclure le nettoyage"></button>
+            </div>
+          </div>
+        </div>
+        <div class="bar">
+          <span class="left" id="sentinfo">Rien n'est envoyé tant que vous n'avez pas validé.</span>
+          <button class="btn ghost" data-go="1">Modifier</button>
+          <button class="btn ghost">Télécharger le PDF</button>
+          <button class="btn primary" id="send">Envoyer à isabelle.rochat@bluewin.ch</button>
+        </div>
+      </section>
+
+      <!-- ===== Écran 4 : mes devis ===== -->
+      <section class="screen" id="s4">
+        <div class="list">
+          <input class="search" placeholder="Rechercher un client, une adresse, un numéro">
+          <table class="dv">
+            <thead><tr><th>Numéro</th><th>Client</th><th>Lieu</th><th>Date</th><th class="num">Total TTC</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>2026-0412</td><td>Isabelle Rochat</td><td>Lausanne</td><td>13.09.2026</td><td class="num">CHF 2'718.60</td><td class="num"><button class="btn ghost">Renvoyer</button></td></tr>
+              <tr><td>2026-0411</td><td>Régie Naef, appartement 2e</td><td>Fribourg</td><td>12.09.2026</td><td class="num">CHF 1'640.20</td><td class="num"><button class="btn ghost">Renvoyer</button></td></tr>
+              <tr><td>2026-0410</td><td>Marc Bovet</td><td>Estavayer-le-Lac</td><td>11.09.2026</td><td class="num">CHF 890.00</td><td class="num"><button class="btn ghost">Renvoyer</button></td></tr>
+              <tr><td>2026-0409</td><td>Succession Dubey</td><td>Payerne</td><td>10.09.2026</td><td class="num">CHF 3'980.50</td><td class="num"><button class="btn ghost">Renvoyer</button></td></tr>
+              <tr><td>2026-0408</td><td>Céline Perrin</td><td>Yverdon-les-Bains</td><td>09.09.2026</td><td class="num">CHF 1'215.30</td><td class="num"><button class="btn ghost">Renvoyer</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bar"><span class="left">5 devis ce mois, CHF 10'444.60 TTC</span><button class="btn brand" data-nav="new">Nouveau devis</button></div>
+      </section>
+
+      <!-- ===== Écran 5 : grille tarifaire ===== -->
+      <section class="screen" id="s5">
+        <div class="gr">
+          <div class="cols">
+            <div class="params">
+              <h2>Paramètres</h2>
+              <div class="kv"><span>Taux horaire équipe<small>2 personnes, CHF / h</small></span><input value="95.00"></div>
+              <div class="kv"><span>Déplacement<small>CHF / km</small></span><input value="1.20"></div>
+              <div class="kv"><span>Déchetterie<small>CHF / tonne</small></span><input value="240.00"></div>
+              <div class="kv"><span>Majoration étage<small>par étage sans ascenseur, dès le 2e</small></span><input value="20 %"></div>
+              <div class="kv"><span>Portage<small>au-delà de 20 m</small></span><input value="30.00"></div>
+              <div class="kv"><span>Autorisation de stationnement</span><input value="60.00"></div>
+              <div class="kv"><span>Nettoyage fin de bail<small>CHF / m²</small></span><input value="10.00"></div>
+              <div class="kv"><span>Minimum de facturation<small>HT</small></span><input value="350.00"></div>
+              <div class="kv"><span>TVA</span><input value="8,1 %"></div>
+            </div>
+            <div>
+              <h2>Catalogue d'objets</h2>
+              <table class="cat">
+                <thead><tr><th>Catégorie</th><th>Volume m³</th><th>Poids kg</th><th>Manutention min</th><th>Prix CHF</th></tr></thead>
+                <tbody id="cattable"></tbody>
+              </table>
+              <p class="note">Ces valeurs sont celles du calcul. Une modification s'applique à tous les futurs devis, pas à ceux déjà envoyés.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bar"><span class="left">Dernière modification le 02.09.2026</span><button class="btn ghost">Annuler</button><button class="btn brand">Enregistrer la grille</button></div>
+      </section>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <div class="gen">
+        <h2>Génération du devis</h2>
+        <p>Une trentaine de secondes, selon le nombre de photos.</p>
+        <ul id="genlist"></ul>
+        <p class="foot">Les photos servent à reconnaître et compter les objets. Le prix est calculé par la grille Pro Space, pas par l'IA.</p>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+  </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Données de démo (en dur, comme demandé) ---------- */
+const GRID = { tva:0.081, min:350, hour:95, km:1.20, tonne:240, pneu:6, etagePct:0.20, portage:30, parking:60, nettoyageM2:10 };
+const TRIP = { from:'Payerne', to:'Lausanne', km:49, min:45 };
+const CLIENT = { surface:75, etage:3, portage:25 };
+const ROOMS = [
+  { id:'salon', name:'Salon', photos:4, items:[
+    { cat:'Canapé 3 places', qty:1, vol:1.5, unit:95, conf:0.96 },
+    { cat:'Meuble TV', qty:1, vol:0.4, unit:35, conf:0.92 },
+    { cat:'Table basse', qty:1, vol:0.3, unit:25, conf:0.90 },
+    { cat:'Bibliothèque', qty:2, vol:0.9, unit:55, conf:0.78 },
+    { cat:'Cartons et sacs divers', qty:6, vol:0.1, unit:5, conf:0.71 } ]},
+  { id:'cuisine', name:'Cuisine', photos:3, items:[
+    { cat:'Réfrigérateur-congélateur', qty:1, vol:0.7, unit:80, conf:0.97, elec:true },
+    { cat:'Table de cuisine et 4 chaises', qty:1, vol:0.8, unit:70, conf:0.94 },
+    { cat:'Cartons et sacs divers', qty:4, vol:0.1, unit:5, conf:0.80 } ]},
+  { id:'chambre', name:'Chambre', photos:3, items:[
+    { cat:'Lit double et matelas', qty:1, vol:1.2, unit:90, conf:0.95 },
+    { cat:'Armoire 3 portes, démontage inclus', qty:1, vol:2.0, unit:140, conf:0.93 },
+    { cat:'Commode', qty:1, vol:0.5, unit:40, conf:0.88 } ]},
+  { id:'sdb', name:'Salle de bain', photos:2, items:[
+    { cat:'Colonne et petit mobilier', qty:1, vol:0.3, unit:25, conf:0.84 } ]},
+  { id:'cave', name:'Cave', photos:4, items:[
+    { cat:'Étagères métalliques', qty:3, vol:0.4, unit:20, conf:0.90 },
+    { cat:'Vélo', qty:1, vol:0.3, unit:25, conf:0.98 },
+    { cat:'Cartons et sacs divers', qty:10, vol:0.1, unit:5, conf:0.68 },
+    { cat:'Pneus', qty:4, vol:0.1, unit:10, conf:0.95, pneu:true } ]}
+];
+const CATALOGUE = [
+  ['Canapé 3 places',1.5,60,20,95],['Canapé 2 places',1.0,45,15,70],['Fauteuil',0.5,20,8,35],['Table basse',0.3,15,5,25],
+  ['Meuble TV',0.4,25,8,35],['Bibliothèque',0.9,45,15,55],['Table de cuisine et 4 chaises',0.8,40,12,70],['Lit double et matelas',1.2,50,18,90],
+  ['Armoire 3 portes, démontage inclus',2.0,110,35,140],['Commode',0.5,35,8,40],['Réfrigérateur-congélateur',0.7,70,15,80],['Lave-linge',0.5,75,15,80],
+  ['Étagères métalliques',0.4,15,6,20],['Vélo',0.3,15,4,25],['Cartons et sacs divers',0.1,8,2,5],['Pneus',0.1,9,2,10]
+];
+
+const state = { rooms: JSON.parse(JSON.stringify(ROOMS)), nettoyage:true, sent:false, room:'salon', screen:1 };
+
+/* ---------- Helpers ---------- */
+const r2 = n => Math.round(n*100)/100, r1 = n => Math.round(n*10)/10, r05 = n => Math.round(n*20)/20;
+function chf(n){ const s = n.toFixed(2); const [i,d] = s.split('.'); return 'CHF ' + i.replace(/\B(?=(\d{3})+(?!\d))/g, "'") + '.' + d; }
+const $ = s => document.querySelector(s);
+
+/* ---------- Moteur de prix (déterministe, miniature de ce que Claude Code portera en TS) ---------- */
+function compute(){
+  let manut = 0, vol = 0, elecVol = 0, pneus = 0; const items = [];
+  state.rooms.forEach(r => r.items.forEach(it => {
+    const t = r2(it.qty*it.unit), v = r1(it.qty*it.vol);
+    manut += t; vol += v; if(it.elec) elecVol += v; if(it.pneu) pneus += it.qty;
+    items.push({ ...it, room:r.name, total:t, volTotal:v });
+  }));
+  manut = r2(manut); vol = r1(vol);
+  const ressM3 = r1(vol*0.35), dechM3 = r1(Math.max(0, vol - ressM3 - elecVol));
+  const dechT = r2(dechM3*0.14), dech = r2(dechT*GRID.tonne), pneuTax = pneus*GRID.pneu;
+  const etage = CLIENT.etage >= 2 ? r2(manut*GRID.etagePct) : 0;
+  const portage = CLIENT.portage > 20 ? GRID.portage : 0;
+  const parking = GRID.parking;
+  const deplacement = r2(TRIP.km*2*GRID.km + (TRIP.min*2/60)*GRID.hour);
+  const nettoyage = state.nettoyage ? CLIENT.surface*GRID.nettoyageM2 : 0;
+  const sousTotal = r2(manut + dech + pneuTax + etage + portage + parking + deplacement + nettoyage);
+  const minApplied = sousTotal < GRID.min, ht = minApplied ? GRID.min : sousTotal;
+  const tva = r2(ht*GRID.tva), ttc = r05(ht + tva);
+  return { items, manut, vol, ressM3, dechM3, dechT, dech, elecVol, pneus, pneuTax, etage, portage, parking, deplacement, nettoyage, sousTotal, minApplied, ht, tva, ttc };
+}
+
+/* ---------- Rendu du document ---------- */
+function renderDoc(){
+  const c = compute();
+  const row = (name, qty, vol, amount, detail) => `<tr><td>${name}${detail?`<div class="d">${detail}</div>`:''}</td><td class="num">${qty??''}</td><td class="num">${vol??''}</td><td class="num">${chf(amount)}</td></tr>`;
+  const sec = t => `<tr class="sec"><td colspan="4">${t}</td></tr>`;
+  let rows = sec('Débarras et manutention');
+  c.items.forEach(it => rows += row(`${it.cat}<span class="room">${it.room}</span>`, it.qty, it.volTotal.toFixed(1)+' m³', it.total));
+  rows += sec('Tri et élimination');
+  rows += row('Déchetterie, déchets encombrants', '', c.dechM3.toFixed(1)+' m³', c.dech, `Estimation ${c.dechT.toFixed(2)} t, CHF ${GRID.tonne.toFixed(2)} / t`);
+  rows += row('Ressourcerie, meubles en bon état', '', c.ressM3.toFixed(1)+' m³', 0, 'Reprise gratuite');
+  if(c.elecVol > 0) rows += row('Électroménager, reprise filière SENS', '', c.elecVol.toFixed(1)+' m³', 0, 'Reprise gratuite');
+  if(c.pneus > 0) rows += row('Taxe d\'élimination, pneus', c.pneus, '', c.pneuTax);
+  rows += sec('Accès et déplacement');
+  if(c.etage) rows += row('Majoration 3e étage sans ascenseur', '', '', c.etage, '20 % de la manutention');
+  if(c.portage) rows += row('Portage 25 m', '', '', c.portage, 'Au-delà des 20 m inclus');
+  rows += row('Autorisation de stationnement, zone bleue', '', '', c.parking);
+  rows += row(`Déplacement ${TRIP.from} – ${TRIP.to}, aller-retour`, '', '', c.deplacement, `${TRIP.km*2} km, ${Math.floor(TRIP.min*2/60)} h ${String(TRIP.min*2%60).padStart(2,'0')}`);
+  if(state.nettoyage){ rows += sec('Nettoyage'); rows += row('Nettoyage de fin de bail', '', CLIENT.surface+' m²', c.nettoyage, 'Sols, sanitaires, cuisine, vitres intérieures, remise des clés'); }
+  $('#doc').innerHTML = `
+    <header>
+      <div class="logo">
+        <img src="https://pro-space.ch/wp-content/uploads/2025/05/logo-site.png" alt="Pro Space" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="wordmark"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="3" width="34" height="34" rx="9" fill="none" stroke="currentColor" stroke-width="2.5"/><rect x="12" y="12" width="16" height="16" rx="3" fill="#E8772E"/></svg>Pro Space</div>
+      </div>
+      <div class="title"><h2>Devis</h2><p>N° 2026-0412<br>Payerne, le 13.09.2026<br>Valable jusqu'au 13.10.2026</p></div>
+    </header>
+    <div class="addr">
+      <div><strong>Pro Space Sàrl</strong>1530 Payerne<br>+41 78 351 56 50<br>contact@pro-space.ch<br><span class="muted">IDE CHE-xxx.xxx.xxx TVA</span></div>
+      <div style="text-align:right"><strong>Madame Isabelle Rochat</strong>Avenue de Béthusy 24<br>1005 Lausanne<br>079 412 88 30<br>isabelle.rochat@bluewin.ch</div>
+    </div>
+    <p class="objet"><strong>Objet</strong> : débarras complet d'un appartement de 3,5 pièces au 3e étage${state.nettoyage?' et nettoyage de fin de bail':''}. Intervention souhaitée la semaine du 21.09.2026. Le piano est conservé et n'est pas compté.</p>
+    <table class="lines">
+      <thead><tr><th>Désignation</th><th class="num">Qté</th><th class="num">Volume</th><th class="num">Montant</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="totals">
+      <div><span>Sous-total HT</span><span>${chf(c.sousTotal)}</span></div>
+      ${c.minApplied?`<div class="min"><span>Minimum de facturation appliqué</span><span>${chf(GRID.min)}</span></div>`:''}
+      <div><span>TVA 8,1 %</span><span>${chf(c.tva)}</span></div>
+      <div class="tt"><span>Total TTC</span><span>${chf(c.ttc)}</span></div>
+    </div>
+    <p class="cond">Devis établi sur la base des photos transmises et de notre grille tarifaire. Les objets non visibles sur les photos ou les volumes supplémentaires constatés sur place sont facturés selon la même grille. Volume estimé ${c.vol.toFixed(1)} m³. Paiement à 10 jours net. Devis valable 30 jours.</p>`;
+}
+
+/* ---------- Rendu de l'inventaire (panneau droit) ---------- */
+function renderInv(){
+  const totalPhotos = state.rooms.reduce((a,r)=>a+r.photos,0), n = state.rooms.reduce((a,r)=>a+r.items.length,0);
+  $('#invsub').textContent = `${n} lignes sur ${totalPhotos} photos. Corrigez les quantités, le devis se recalcule.`;
+  let h = '';
+  state.rooms.forEach((r,ri) => {
+    h += `<h3><span>${r.name}</span><span>${r.photos} photos</span></h3>`;
+    r.items.forEach((it,ii) => {
+      const conf = it.conf==null ? `<span class="conf man">Ajouté à la main</span>` : it.conf>=0.85 ? `<span class="conf">Sûr, ${Math.round(it.conf*100)} %</span>` : `<span class="conf warn">À vérifier, ${Math.round(it.conf*100)} %</span>`;
+      h += `<div class="it"><div class="n"><b>${it.cat}</b>${conf}</div>
+        <div class="qty"><button data-q="-" data-r="${ri}" data-i="${ii}" aria-label="Moins">−</button><span>${it.qty}</span><button data-q="+" data-r="${ri}" data-i="${ii}" aria-label="Plus">+</button></div>
+        <button class="rm" data-rm="1" data-r="${ri}" data-i="${ii}" aria-label="Retirer">×</button></div>`;
+    });
+  });
+  h += `<button class="addit" id="addit">+ Ajouter un objet non détecté</button>`;
+  $('#inv').innerHTML = h;
+}
+$('#inv').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.id === 'addit'){ state.rooms[0].items.push({ cat:'Objet à préciser', qty:1, vol:0.4, unit:30, conf:null }); }
+  else { const r = state.rooms[b.dataset.r], i = +b.dataset.i;
+    if(b.dataset.rm) r.items.splice(i,1);
+    else r.items[i].qty = Math.max(1, r.items[i].qty + (b.dataset.q==='+'?1:-1)); }
+  renderInv(); renderDoc();
+});
+$('#tognet').addEventListener('click', e => { state.nettoyage = !state.nettoyage; e.currentTarget.classList.toggle('on', state.nettoyage); renderDoc(); });
+
+/* ---------- Écran photos ---------- */
+function renderRooms(){
+  $('#roomlist').innerHTML = state.rooms.map(r => `<button class="room${r.id===state.room?' on':''}" data-room="${r.id}"><span>${r.name}</span><em>${r.photos}</em></button>`).join('');
+  const room = state.rooms.find(r => r.id===state.room), total = state.rooms.reduce((a,r)=>a+r.photos,0);
+  $('#roomtitle').textContent = room.name;
+  let t = '';
+  for(let i=1;i<=room.photos;i++) t += `<div class="tile t-${room.id}"><span>${room.name} ${i}</span><b>×</b></div>`;
+  t += `<div class="tile add"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Prendre une photo</div>`;
+  t += `<div class="tile add"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 15l5-5 4 4 3-3 4 4"/><circle cx="16" cy="9" r="1.5"/></svg>Depuis la galerie</div>`;
+  $('#tiles').innerHTML = t;
+  $('#count').textContent = `${total} / 20 photos`;
+  $('#barcount').textContent = `${total} photos dans ${state.rooms.length} pièces`;
+}
+$('#roomlist').addEventListener('click', e => { const b = e.target.closest('[data-room]'); if(b){ state.room = b.dataset.room; renderRooms(); } });
+
+/* ---------- Navigation ---------- */
+function go(n){
+  state.screen = n;
+  document.querySelectorAll('.screen').forEach((s,i) => s.classList.toggle('on', i+1===n));
+  const inFlow = n<=3;
+  $('#stepper').style.display = inFlow ? 'flex' : 'none';
+  $('#title').textContent = n===4 ? 'Mes devis' : n===5 ? 'Grille tarifaire' : 'Nouveau devis';
+  $('#status').style.display = inFlow ? 'block' : 'none';
+  document.querySelectorAll('.step').forEach((s,i) => { s.classList.toggle('on', i+1===n); s.classList.toggle('done', i+1<n); });
+  document.querySelectorAll('.rail nav button').forEach(b => b.classList.toggle('on', (n<=3&&b.dataset.nav==='new')||(n===4&&b.dataset.nav==='list')||(n===5&&b.dataset.nav==='grid')));
+}
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if(g){ go(+g.dataset.go); return; }
+  const nv = e.target.closest('[data-nav]'); if(nv){ go({new:1,list:4,grid:5}[nv.dataset.nav]); }
+});
+
+/* ---------- Génération (overlay) puis devis ---------- */
+$('#generate').addEventListener('click', () => {
+  const steps = state.rooms.map(r => `Analyse des photos, ${r.name.toLowerCase()} (${r.photos})`).concat(['Fusion des doublons entre photos','Calcul du devis selon la grille Pro Space']);
+  $('#genlist').innerHTML = steps.map(s => `<li><i></i>${s}</li>`).join('');
+  $('#overlay').classList.add('on');
+  const lis = document.querySelectorAll('#genlist li'); let k = 0;
+  const tick = () => {
+    if(k>0){ lis[k-1].classList.remove('run'); lis[k-1].classList.add('ok'); lis[k-1].querySelector('i').textContent='✓'; }
+    if(k<lis.length){ lis[k].classList.add('run'); k++; setTimeout(tick, 420); }
+    else { setTimeout(() => { $('#overlay').classList.remove('on'); renderInv(); renderDoc(); go(3); }, 300); }
+  };
+  tick();
+});
+
+/* ---------- Envoi ---------- */
+$('#send').addEventListener('click', e => {
+  const t = $('#toast'); t.textContent = state.sent ? 'Devis renvoyé à isabelle.rochat@bluewin.ch' : 'Devis 2026-0412 envoyé à isabelle.rochat@bluewin.ch'; t.classList.add('on');
+  state.sent = true; e.currentTarget.textContent = 'Renvoyer le devis'; $('#status').textContent = 'Envoyé le 13.09.2026 à 14:41'; $('#sentinfo').textContent = 'Envoyé. Vous pouvez encore corriger et renvoyer.';
+  setTimeout(() => t.classList.remove('on'), 2600);
+});
+
+/* ---------- Grille ---------- */
+$('#cattable').innerHTML = CATALOGUE.map(c => `<tr><td class="name">${c[0]}</td><td><input value="${c[1].toFixed(1)}"></td><td><input value="${c[2]}"></td><td><input value="${c[3]}"></td><td><input value="${c[4].toFixed(2)}"></td></tr>`).join('');
+
+/* ---------- Mise à l'échelle de l'aperçu tablette ---------- */
+function fit(){ const st = $('.stage'), d = $('#device'), s = Math.min(1, st.clientWidth/1024); d.style.transform = `scale(${s})`; st.style.height = (768*s)+'px'; }
+window.addEventListener('resize', fit);
+
+renderRooms(); renderInv(); renderDoc(); fit();
+</script>
+</body>
+</html>

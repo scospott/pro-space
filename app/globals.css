@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* Tokens de design Pro Space (valeurs de docs/maquette-v0.html).
+   La palette Tailwind par défaut est désactivée : seuls ces tokens existent. */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-ink: #152128;
+  --color-muted: #5c6b73;
+  --color-line: #d8dee2;
+  --color-line-soft: #ebeff1;
+  --color-canvas: #e9edf0;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f7f8;
+  --color-brand: #003664;
+  --color-brand-ink: #00284b;
+  --color-brand-soft: #e1ebf3;
+  --color-accent: #e8772e;
+  --color-accent-ink: #c9611e;
+  --color-ok: #2e7d5b;
+  --color-ok-soft: #e3f1e9;
+  --color-warn: #b7791f;
+  --color-warn-soft: #fbf1df;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-scrim: rgb(21 33 40 / 0.55);
+
+  --radius-r: 10px;
+  --radius-rs: 6px;
+
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Montants et quantités : chiffres tabulaires. */
+.montant,
+.tabular {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@keyframes ps-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ps-spinner {
+  animation: ps-spin 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-spinner {
+    animation: none;
+  }
+  * {
+    transition: none !important;
+  }
+}
