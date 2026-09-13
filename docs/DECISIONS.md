@@ -29,4 +29,10 @@ Une ligne par décision : choix, raison.
 - Trajet : après un échec, l'adresse est mémorisée avec `source: 'manuel'` pour ne pas relancer le calcul en boucle ; bouton « Relancer le calcul », et « Corriger à la main » sur un trajet calculé. Libellé manuel « Payerne – localité » (la variable BASE_ADDRESS n'est lue que côté serveur).
 - Stepper : l'étape 3 est accessible dès qu'un inventaire existe (ou pour un nettoyage seul), pas seulement avec des photos : un devis dupliqué n'a plus de photos mais garde son inventaire.
 - Grille du formulaire en 12 colonnes calibrée pour 572 px utiles en tablette ; types de prestation et destinations sur toute la largeur pour que « Débarras + nettoyage » tienne sur une ligne.
+- Boutons « Prendre une photo » et « Depuis la galerie » : `<label>` contenant l'`<input type="file">` visuellement masqué, plutôt qu'un `input.click()` en JavaScript, fiable sur Safari iPadOS et accessible au clavier.
+- Photos traitées une par une (redimensionnement puis IndexedDB) : mémoire maîtrisée sur tablette avec des originaux de 12 Mpx ; progression « Préparation des photos : 3 / 6 ».
+- Compteur de la barre basse « 16 photos dans 5 pièces » : compte les pièces qui contiennent au moins une photo.
+- Renommer et supprimer la pièce active : boutons dans l'en-tête de la zone photos (pas de geste ni de menu au survol). Suppression confirmée dès que la pièce contient des photos ou un inventaire.
+- Ajout de pièce : dialogue avec nom libre et suggestions tactiles (Chambre 2, Bureau, Buanderie, Garage, Grenier, Extérieur).
+- Vignettes via `next/image` en `unoptimized` sur l'URL blob : pas d'avertissement eslint, pas d'optimisation serveur inutile.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.
