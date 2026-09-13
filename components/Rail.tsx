@@ -17,7 +17,7 @@ const iconProps = {
 
 const entries: Entry[] = [
   {
-    href: "/nouveau/client",
+    href: "/nouveau/client?reprise=1",
     label: "Nouveau devis",
     match: (p) => p.startsWith("/nouveau"),
     icon: (

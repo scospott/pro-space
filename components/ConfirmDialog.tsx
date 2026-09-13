@@ -13,6 +13,8 @@ type ConfirmDialogProps = {
   confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Échap ou clic sur le voile ; par défaut, onCancel. */
+  onDismiss?: () => void;
 };
 
 export function ConfirmDialog({
@@ -25,7 +27,9 @@ export function ConfirmDialog({
   confirmDisabled,
   onConfirm,
   onCancel,
+  onDismiss,
 }: ConfirmDialogProps) {
+  const fermer = onDismiss ?? onCancel;
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -36,19 +40,19 @@ export function ConfirmDialog({
     const first = panel?.querySelector<HTMLElement>("input, textarea, select, button[data-autofocus]");
     (first ?? panel)?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") fermer();
     };
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
       previous?.focus();
     };
-  }, [open, onCancel]);
+  }, [open, fermer]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-scrim p-6" onClick={onCancel}>
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-scrim p-6" onClick={fermer}>
       <div
         ref={panelRef}
         role="dialog"

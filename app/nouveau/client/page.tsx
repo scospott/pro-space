@@ -1,17 +1,6 @@
-import { BottomBar } from "@/components/BottomBar";
-import { ButtonLink } from "@/components/Button";
+import { EcranClient } from "@/components/ecrans/EcranClient";
 
-export default function ClientPage() {
-  return (
-    <>
-      <div className="flex-1 overflow-auto p-7">
-        <p className="text-muted">Formulaire client et lieu, en construction.</p>
-      </div>
-      <BottomBar>
-        <ButtonLink href="/nouveau/photos" variant="brand">
-          Continuer vers les photos
-        </ButtonLink>
-      </BottomBar>
-    </>
-  );
+export default async function ClientPage({ searchParams }: PageProps<"/nouveau/client">) {
+  const params = await searchParams;
+  return <EcranClient reprise={params.reprise === "1"} />;
 }

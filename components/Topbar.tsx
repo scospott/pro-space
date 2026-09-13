@@ -1,6 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { dateCH, heureCH } from "@/lib/format";
+import { useStore } from "@/lib/store";
+import { useHydrated } from "@/lib/useHydrated";
+import { etape1Valide, etape3Accessible } from "@/lib/validation";
 import { Stepper, type StepState } from "./Stepper";
 
 function titreDepuisChemin(pathname: string): string {
@@ -19,16 +23,35 @@ function etapeCourante(pathname: string): 1 | 2 | 3 {
 
 export function Topbar() {
   const pathname = usePathname() ?? "";
+  const hydrated = useHydrated();
+  const draft = useStore((s) => s.draft);
+  const enregistreAt = useStore((s) => s.ui.brouillonEnregistreAt);
   const dansParcours = pathname.startsWith("/nouveau");
+  const courante = etapeCourante(pathname);
+  const envoye = draft.statut === "envoye";
+
   const steps: StepState[] = [
-    { numero: 1, label: "Client et lieu", href: "/nouveau/client", enabled: true },
-    { numero: 2, label: "Photos", href: "/nouveau/photos", enabled: true },
-    { numero: 3, label: "Devis", href: "/nouveau/devis", enabled: true },
+    { numero: 1, label: "Client et lieu", href: "/nouveau/client", enabled: hydrated },
+    { numero: 2, label: "Photos", href: "/nouveau/photos", enabled: hydrated && (courante > 2 || envoye || etape1Valide(draft)) },
+    { numero: 3, label: "Devis", href: "/nouveau/devis", enabled: hydrated && etape3Accessible(draft) },
   ];
+
+  let statut: string | null = null;
+  if (hydrated && dansParcours) {
+    const sentAt = draft.snapshot?.sentAt;
+    if (envoye && sentAt) statut = `Envoyé le ${dateCH(sentAt)} à ${heureCH(sentAt)}`;
+    else if (enregistreAt) statut = `Brouillon enregistré à ${heureCH(enregistreAt)}`;
+  }
+
   return (
     <header className="flex h-16 shrink-0 items-center gap-[22px] border-b border-line bg-surface px-6">
       <h1 className="text-[18px] font-semibold whitespace-nowrap">{titreDepuisChemin(pathname)}</h1>
-      {dansParcours ? <Stepper steps={steps} current={etapeCourante(pathname)} /> : null}
+      {dansParcours ? <Stepper steps={steps} current={courante} /> : null}
+      {statut ? (
+        <p className="ml-auto truncate text-[13px] text-muted" aria-live="polite">
+          {statut}
+        </p>
+      ) : null}
     </header>
   );
 }

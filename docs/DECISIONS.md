@@ -22,4 +22,11 @@ Une ligne par décision : choix, raison.
 - Pièces par défaut créées avec le brouillon et remplacées au changement de type de logement tant qu'aucune photo ni inventaire n'existe.
 - Réinitialiser la grille incrémente aussi la version : c'est une modification des prix appliqués aux futurs devis.
 - Store persistant en `skipHydration` + `useSyncExternalStore` sur `persist.hasHydrated()` : pas de décalage de rendu serveur/client.
+- Saisie différée : valeur locale écrite dans le store 300 ms après la dernière frappe, immédiatement à la sortie du champ, au démontage et avant toute validation (`flushSaisies`) ; aucune frappe perdue en changeant d'écran.
+- Pas de bouton « Enregistrer le brouillon » (présent dans la maquette) : l'enregistrement est continu, la barre haute affiche l'heure du dernier enregistrement.
+- Proposition « Reprendre le brouillon / Repartir de zéro » uniquement à l'ouverture de « Nouveau devis » (rail ou page d'accueil, paramètre `?reprise=1`), jamais au retour depuis l'étape 2 ni au rechargement : sinon la question reviendrait à chaque navigation arrière. Échap = reprendre (non destructif).
+- Un nombre saisi hors bornes (étage > 40, texte non numérique) n'est pas écrit dans le store et le champ revient à la dernière valeur valide à la sortie.
+- Trajet : après un échec, l'adresse est mémorisée avec `source: 'manuel'` pour ne pas relancer le calcul en boucle ; bouton « Relancer le calcul », et « Corriger à la main » sur un trajet calculé. Libellé manuel « Payerne – localité » (la variable BASE_ADDRESS n'est lue que côté serveur).
+- Stepper : l'étape 3 est accessible dès qu'un inventaire existe (ou pour un nettoyage seul), pas seulement avec des photos : un devis dupliqué n'a plus de photos mais garde son inventaire.
+- Grille du formulaire en 12 colonnes calibrée pour 572 px utiles en tablette ; types de prestation et destinations sur toute la largeur pour que « Débarras + nettoyage » tienne sur une ligne.
 - Marque du rail : `public/logo-mark.png` (maison du logo, découpée par sharp) en masque CSS blanc sur fond `brand` : le logo complet est bleu marine et illisible sur le rail.
